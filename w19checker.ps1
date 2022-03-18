@@ -1,7 +1,7 @@
 function AccountsWithUserRight {
     <#
         .SYNOPSIS
-            Gets all accounts that are assigned a specified privilege
+            Gets all accounts that are assigned a specified privilege (modified version)
         .DESCRIPTION
             Retrieves a list of all accounts that hold a specified right (privilege). The accounts returned are those that hold the specified privilege directly through the user account, not as part of membership to a group.
         .EXAMPLE
@@ -62,7 +62,7 @@ function AccountsWithUserRight {
     #>
     param (
         [Parameter(Mandatory=$true)][Alias('Privilege')][PS_LSA.Rights[]]$Right,
-        [Parameter(Mandatory=$false)][Alias('System','ComputerName','Host')][String] $Computer
+        [Parameter(Mandatory=$false)][Alias('System','ComputerName','Host')][String]$Computer
     )
 
     $lsa = New-Object PS_LSA.LsaWrapper($Computer)
@@ -91,11 +91,12 @@ Function Failed {
 
 Function Checker {
     Param (
-        [Parameter(Mandatory=$true)][string]$field,
+        [Parameter(Mandatory=$true)][AllowEmptyString()][string]$field,
         [Parameter(Mandatory=$true)][string]$op,
-        [Parameter(Mandatory=$true)][string]$req
+        [Parameter(Mandatory=$true)][AllowEmptyString()][string]$req
     )
 
+    # Need to code char conditions (eqc) - must be check, maybe a bug or something else
     switch($op) {
         "lt" {
                 if ([int]$field -lt $req) {
@@ -132,6 +133,11 @@ Function Checker {
                     Pass
                 } else { Failed $field }
             }
+        "eqc" {
+                if ($field -eq $req) {
+                    Pass
+                } else { Failed $field }
+             }
     }
 }
 
@@ -187,9 +193,8 @@ Function LocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.1 (L1) Ensure 'Access Credential Manager as a trusted caller' is set to 'No One'" -ForegroundColor Green
-    AccountsWithUserRight SeTrustedCredManAccessPrivilege
-    Checker $localpolicies.
-
+    $acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
+    Checker $acmtc 'eqc' $null
 }
 
 AccountPolicies
