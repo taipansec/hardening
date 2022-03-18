@@ -589,23 +589,72 @@ Function LocalPolicies {
     Write-Host "2.2.29 (L1) Ensure 'Force shutdown from a remote system' is set to 'Administrators'" -ForegroundColor Green
     [string]$fsrs = AccountsWithUserRight SeRemoteShutdownPrivilege
     # EN version
-    # Checker $cgp 'eqc' "BUILTIN\Administrators"
+    # Checker $fsrs 'eqc' "BUILTIN\Administrators"
     # FR version
     Checker $fsrs 'eqc' "BUILTIN\Administrateurs"
 
     Write-Host "2.2.30 (L1) Ensure 'Generate security audits' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$gsa = AccountsWithUserRight SeAuditPrivilege
     # EN version
-    # Checker $cgp 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
+    # Checker $gsa 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
     # FR version
     Checker $gsa 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.33 (L1) Ensure 'Increase scheduling priority' is set to 'Administrators, Window Manager\Window Manager Group'" -ForegroundColor Green
-    [string]$gsa = AccountsWithUserRight SeIncreaseBasePriorityPrivilege
+    [string]$isp = AccountsWithUserRight SeIncreaseBasePriorityPrivilege
     # EN version
-    # Checker $cgp 'eqc' "BUILTIN\Administrators"
+    # Checker $isp 'eqc' "Window Manager\Window Manager Group BUILTIN\Administrators"
     # FR version
-    Checker $gsa 'eqc' "BUILTIN\Administrateurs"
+    Checker $isp 'eqc' "Window Manager\Window Manager Group BUILTIN\Administrateurs"
+
+    Write-Host "2.2.34 (L1) Ensure 'Load and unload device drivers' is set to 'Administrators'" -ForegroundColor Green
+    [string]$ludd = AccountsWithUserRight SeLoadDriverPrivilege
+    # EN version
+    # Checker $ludd 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $ludd 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.35 (L1) Ensure 'Lock pages in memory' is set to 'No One'" -ForegroundColor Green
+    [string]$lpm = AccountsWithUserRight SeLockMemoryPrivilege
+    # EN version
+    # Checker $lpm 'eqc' $null
+    # FR version
+    Checker $lpm 'eqc' $null
+    
+    Write-Host "2.2.39 (L1) Ensure 'Modify an object label' is set to 'No One'" -ForegroundColor Green
+    [string]$mol = AccountsWithUserRight SeRelabelPrivilege
+    # EN version
+    # Checker $mol 'eqc' $null
+    # FR version
+    Checker $mol 'eqc' $null
+
+    Write-Host "2.2.40 (L1) Ensure 'Modify firmware environment values' is set to 'Administrators'" -ForegroundColor Green
+    [string]$mfev = AccountsWithUserRight SeSystemEnvironmentPrivilege
+    # EN version
+    # Checker $mfev 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $mfev 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.41 (L1) Ensure 'Perform volume maintenance tasks' is set to 'Administrators'" -ForegroundColor Green
+    [string]$pvmt = AccountsWithUserRight SeManageVolumePrivilege
+    # EN version
+    # Checker $pvmt 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $pvmt 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.42 (L1) Ensure 'Profile single process' is set to 'Administrators'" -ForegroundColor Green
+    [string]$psp = AccountsWithUserRight SeProfileSingleProcessPrivilege
+    # EN version
+    # Checker $psp 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $psp 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.43 (L1) Ensure 'Profile system performance' is set to 'Administrators, NT SERVICE\WdiServiceHost'" -ForegroundColor Green
+    [string]$psysp = AccountsWithUserRight SeSystemProfilePrivilege
+    # EN version
+    # Checker $psysp 'eqc' "BUILTIN\Administrators NT SERVICE\WdiServiceHost"
+    # FR version
+    Checker $psysp 'eqc' "BUILTIN\Administrateurs"
 }
 
 AccountPolicies
