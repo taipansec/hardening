@@ -202,7 +202,52 @@ Function LocalPolicies {
 
     Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
-    Checker $amqp 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE NT\NETWORK SERVICE"
+    # EN version
+    # Checker $amqp 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE NT\NETWORK SERVICE"
+    # FR version
+    Checker $amqp 'eqc' "BUILTIN\Administrateurs NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
+    [string]$alla = AccountsWithUserRight SeInteractiveLogonRight
+    # EN version
+    # Checker $alla 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $alla 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.10 (L1) Ensure 'Back up files and directories' is set to 'Administrators'" -ForegroundColor Green
+    [string]$bfd = AccountsWithUserRight SeBackupPrivilege
+    # EN version
+    # Checker $bfd 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $bfd 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.11 (L1) Ensure 'Change the system time' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    [string]$cst = AccountsWithUserRight SeSystemtimePrivilege
+    # EN version
+    # Checker $cst 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE"
+    # FR version
+    Checker $cst 'eqc' "BUILTIN\Administrateurs NT\SERVICE LOCAL"
+
+    Write-Host "2.2.12 (L1) Ensure 'Change the time zone' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    [string]$clt = AccountsWithUserRight SeTimeZonePrivilege
+    # EN version
+    # Checker $clt 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE"
+    # FR version
+    Checker $clt 'eqc' "BUILTIN\Administrateurs NT\SERVICE LOCAL"
+
+    Write-Host "2.2.13 (L1) Ensure 'Create a pagefile' is set to 'Administrators'" -ForegroundColor Green
+    [string]$cp = AccountsWithUserRight SeTimeZonePrivilege
+    # EN version
+    # Checker $cp 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $cp 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.14 (L1) Ensure 'Create a token object' is set to 'No One'" -ForegroundColor Green
+    [string]$cto = AccountsWithUserRight SeTimeZonePrivilege
+    # EN version
+    # Checker $cto 'eqc' $null
+    # FR version
+    Checker $cto 'eqc' $null
 }
 
 AccountPolicies
