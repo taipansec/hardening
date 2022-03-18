@@ -492,7 +492,7 @@ Function LocalPolicies {
     Checker $acmtc 'eqc' $null
     
     Write-Host "2.2.4 (L1) Ensure 'Act as part of the operating system' is set to 'No One'" -ForegroundColor Green
-    $apos = AccountsWithUserRight SeTcbPrivilege
+    [string]$apos = AccountsWithUserRight SeTcbPrivilege
     Checker $apos 'eqc' $null
 
     Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
@@ -668,6 +668,13 @@ Function LocalPolicies {
     Write-Host "2.2.47 (L1) Ensure 'Synchronize directory service data' is set to 'No One'" -ForegroundColor Green
     [string]$sdsd = AccountsWithUserRight SeSyncAgentPrivilege
     Checker $sdsd 'eqc' $null
+
+    Write-Host "2.2.48 (L1) Ensure 'Take ownership of files or other objects' is set to 'Administrators'" -ForegroundColor Green
+    [string]$town = AccountsWithUserRight SeTakeOwnershipPrivilege
+    # EN version
+    # Checker $town 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $town 'eqc' "BUILTIN\Administrateurs"
 }
 
 AccountPolicies
