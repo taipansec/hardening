@@ -358,7 +358,7 @@ function UserRightsGrantedToAccount {
     }
 }
 
-function Get-AccountsWithUserRight {
+function AccountsWithUserRight {
     <#
         .SYNOPSIS
             Gets all accounts that are assigned a specified privilege
@@ -420,19 +420,15 @@ function Get-AccountsWithUserRight {
         .PARAMETER Computer
             Specifies the name of the computer on which to run this cmdlet. If the input for this parameter is omitted, then the cmdlet runs on the local computer.
     #>
-    [CmdletBinding()]
     param (
-        [Parameter(Position=0, Mandatory=$true, ValueFromPipelineByPropertyName=$true, ValueFromPipeline=$true)]
-        [Alias('Privilege')] [PS_LSA.Rights[]] $Right,
-        [Parameter(ValueFromPipelineByPropertyName=$true, HelpMessage="Computer name")]
-        [Alias('System','ComputerName','Host')][String] $Computer
+        [Parameter(Mandatory=$true)][Alias('Privilege')][PS_LSA.Rights[]]$Right,
+        [Parameter(Mandatory=$false)][Alias('System','ComputerName','Host')][String] $Computer
     )
-    process {
-        $lsa = New-Object PS_LSA.LsaWrapper($Computer)
-        foreach ($Priv in $Right) {
-            $output = @{'Account'=$lsa.EnumerateAccountsWithUserRight($Priv); 'Right'=$Priv; }
-            Write-Output (New-Object -Typename PSObject -Prop $output)
-        }
+
+    $lsa = New-Object PS_LSA.LsaWrapper($Computer)
+    foreach ($Priv in $Right) {
+        $output = @{'Account'=$lsa.EnumerateAccountsWithUserRight($Priv); 'Right'=$Priv; }
+        Write-Output (New-Object -Typename PSObject -Prop $output)
     }
 }
 
