@@ -79,9 +79,10 @@ Function Pass {
 
 Function Failed {
     Param (
-        [Parameter(Mandatory=$true)][string]$field
+        [Parameter(Mandatory=$true)][AllowEmptyString()][string]$field
     )
     
+    if ($field -eq "") { $field = "Empty setting" }
     Write-Host "Currently set to: " -NoNewline
     Write-Host $field -ForegroundColor Red
     Write-Output "The policy doesn't meet CIS the requirements" `r
@@ -135,6 +136,11 @@ Function Checker {
             }
         "eqc" {
                 if ($field -eq $req) {
+                    Pass
+                } else { Failed $field }
+             }
+        "match" {
+                if ($field -match $req) {
                     Pass
                 } else { Failed $field }
              }
@@ -255,6 +261,41 @@ Function LocalPolicies {
     # Checker $cgp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE NT AUTHORITY\SERVICE"
     # FR version
     Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.16 (L1) Ensure 'Create permanent shared objects' is set to 'No One'" -ForegroundColor Green
+    [string]$cpso = AccountsWithUserRight SeCreatePermanentPrivilege
+    # EN version
+    # Checker $cgp 'eqc' $null
+    # FR version
+    Checker $cpso 'eqc' $null
+
+    Write-Host "2.2.19 (L1) Ensure 'Debug programs' is set to 'Administrators'" -ForegroundColor Green
+    [string]$dpa = AccountsWithUserRight SeDebugPrivilege
+    # EN version
+    # Checker $cgp 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $dpa 'eqc' "BUILTIN\Administrateurs"
+    
+    Write-Host "2.2.22 (L1) Ensure 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
+    [string]$dlbj = AccountsWithUserRight SeDenyBatchLogonRight
+    # EN version
+    # Checker $dlbj 'match' "Guests"
+    # FR version
+    Checker $dlbj 'match' "Invités"
+
+    Write-Host "2.2.23 (L1) Ensure 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
+    [string]$dls = AccountsWithUserRight SeDenyServiceLogonRight
+    # EN version
+    # Checker $dls 'match' "Guests"
+    # FR version
+    Checker $dls 'match' "Invités"
+
+    Write-Host "2.2.24 (L1) Ensure 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
+    [string]$dll = AccountsWithUserRight SeDenyInteractiveLogonRight
+    # EN version
+    # Checker $dll 'match' "Guests"
+    # FR version
+    Checker $dll 'match' "Invités"
 }
 
 AccountPolicies
