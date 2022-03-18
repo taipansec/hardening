@@ -85,7 +85,7 @@ namespace PS_LSA
  
     internal sealed class Win32Sec
     {
-        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
         internal static extern uint LsaOpenPolicy(
             LSA_UNICODE_STRING[] SystemName,
             ref LSA_OBJECT_ATTRIBUTES ObjectAttributes,
@@ -93,7 +93,7 @@ namespace PS_LSA
             out IntPtr PolicyHandle
         );
  
-        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
         internal static extern uint LsaEnumerateAccountRights(
             LSA_HANDLE PolicyHandle,
             IntPtr pSID,
@@ -101,7 +101,7 @@ namespace PS_LSA
             out ulong CountOfRights
         );
  
-        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
         internal static extern uint LsaEnumerateAccountsWithUserRight(
             LSA_HANDLE PolicyHandle,
             LSA_UNICODE_STRING[] UserRights,
@@ -109,13 +109,13 @@ namespace PS_LSA
             out ulong CountReturned
         );
  
-        [DllImport("advapi32")]
+        [DllImport("advapi32.dll")]
         internal static extern int LsaNtStatusToWinError(int NTSTATUS);
  
-        [DllImport("advapi32")]
+        [DllImport("advapi32.dll")]
         internal static extern int LsaClose(IntPtr PolicyHandle);
  
-        [DllImport("advapi32")]
+        [DllImport("advapi32.dll")]
         internal static extern int LsaFreeMemory(IntPtr Buffer);
     }
  
@@ -351,7 +351,7 @@ function UserRightsGrantedToAccount {
         [Parameter(Mandatory=$false)][Alias('System','ComputerName','Host')][String]$Computer      
     )
 
-    $lsa = New-Object lp.LsaWrapper($Computer)
+    $lsa = New-Object PS_LSA.LsaWrapper($Computer)
     foreach ($Acct in $Account) {
         $output = @{'Account'=$Acct; 'Right'=$lsa.EnumerateAccountPrivileges($Acct); }
         Write-Output (New-Object -Typename PSObject -Prop $output)
