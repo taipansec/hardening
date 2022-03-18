@@ -195,6 +195,8 @@ Function LocalPolicies {
     Write-Host "2.2.1 (L1) Ensure 'Access Credential Manager as a trusted caller' is set to 'No One'" -ForegroundColor Green
     $acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
     Checker $acmtc 'eqc' $null
+    
+    
 }
 
 AccountPolicies
