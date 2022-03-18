@@ -488,8 +488,7 @@ Function LocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.1 (L1) Ensure 'Access Credential Manager as a trusted caller' is set to 'No One'" -ForegroundColor Green
-    $acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
-    Checker $acmtc 'eqc' $null
+    Checker [string]$(AccountsWithUserRight SeTrustedCredManAccessPrivilege) 'eqc' $null
     
     Write-Host "2.2.4 (L1) Ensure 'Act as part of the operating system' is set to 'No One'" -ForegroundColor Green
     $apos = AccountsWithUserRight SeTcbPrivilege
@@ -652,9 +651,29 @@ Function LocalPolicies {
     Write-Host "2.2.43 (L1) Ensure 'Profile system performance' is set to 'Administrators, NT SERVICE\WdiServiceHost'" -ForegroundColor Green
     [string]$psysp = AccountsWithUserRight SeSystemProfilePrivilege
     # EN version
-    # Checker $psysp 'eqc' "BUILTIN\Administrators NT SERVICE\WdiServiceHost"
+    # Checker $psysp 'eqc' "NT SERVICE\WdiServiceHost BUILTIN\Administrators"
     # FR version
-    Checker $psysp 'eqc' "BUILTIN\Administrateurs"
+    Checker $psysp 'eqc' "NT SERVICE\WdiServiceHost BUILTIN\Administrateurs"
+
+    Write-Host "2.2.44 (L1) Ensure 'Replace a process level token' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
+    [string]$rplt = AccountsWithUserRight SeAssignPrimaryTokenPrivilege
+    # EN version
+    # Checker $rplt 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
+    # FR version
+    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.45 (L1) Ensure 'Restore files and directories' is set to 'Administrators'" -ForegroundColor Green
+    [string]$rfd = AccountsWithUserRight SeRestorePrivilege
+    # EN version
+    # Checker $rfd 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker $rfd 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.46 (L1) Ensure 'Shut down the system' is set to 'Administrators'" -ForegroundColor Green
+    # EN version
+    # Checker [string]$(AccountsWithUserRight SeShutdownPrivilege) 'eqc' "BUILTIN\Administrators"
+    # FR version
+    Checker [string]$(AccountsWithUserRight SeShutdownPrivilege) 'eqc' "BUILTIN\Administrateurs"
 }
 
 AccountPolicies
