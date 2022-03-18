@@ -331,7 +331,7 @@ namespace PS_LSA
 
 Add-Type $lp
 
-function Get-UserRightsGrantedToAccount {
+function UserRightsGrantedToAccount {
     <#
         .SYNOPSIS
             Gets all user rights granted to an account
@@ -346,19 +346,15 @@ function Get-UserRightsGrantedToAccount {
         .PARAMETER Computer
             Specifies the name of the computer on which to run this cmdlet. If the input for this parameter is omitted, then the cmdlet runs on the local computer.
     #>
-    [CmdletBinding()]
     param (
-        [Parameter(Position=0, Mandatory=$true, ValueFromPipelineByPropertyName=$true, ValueFromPipeline=$true)]
-        [Alias('User','Username')][String[]] $Account,
-        [Parameter(ValueFromPipelineByPropertyName=$true, HelpMessage="Computer name")]
-        [Alias('System','ComputerName','Host')][String] $Computer
+        [Parameter(Mandatory=$true)][Alias('User','Username')][string[]]$Account,
+        [Parameter(Mandatory=$false)][Alias('System','ComputerName','Host')][String]$Computer      
     )
-    process {
-        $lsa = New-Object lp.LsaWrapper($Computer)
-        foreach ($Acct in $Account) {
-            $output = @{'Account'=$Acct; 'Right'=$lsa.EnumerateAccountPrivileges($Acct); }
-            Write-Output (New-Object -Typename PSObject -Prop $output)
-        }
+
+    $lsa = New-Object lp.LsaWrapper($Computer)
+    foreach ($Acct in $Account) {
+        $output = @{'Account'=$Acct; 'Right'=$lsa.EnumerateAccountPrivileges($Acct); }
+        Write-Output (New-Object -Typename PSObject -Prop $output)
     }
 }
 
