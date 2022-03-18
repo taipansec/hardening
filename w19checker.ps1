@@ -203,9 +203,9 @@ Function LocalPolicies {
     Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
     # EN version
-    # Checker $amqp 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE NT\NETWORK SERVICE"
+    # Checker $amqp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
     # FR version
-    Checker $amqp 'eqc' "BUILTIN\Administrateurs NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
     [string]$alla = AccountsWithUserRight SeInteractiveLogonRight
@@ -224,30 +224,37 @@ Function LocalPolicies {
     Write-Host "2.2.11 (L1) Ensure 'Change the system time' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
     [string]$cst = AccountsWithUserRight SeSystemtimePrivilege
     # EN version
-    # Checker $cst 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE"
+    # Checker $cst 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE"
     # FR version
-    Checker $cst 'eqc' "BUILTIN\Administrateurs NT\SERVICE LOCAL"
+    Checker $cst 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.12 (L1) Ensure 'Change the time zone' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
     [string]$clt = AccountsWithUserRight SeTimeZonePrivilege
     # EN version
-    # Checker $clt 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE"
+    # Checker $clt 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE"
     # FR version
-    Checker $clt 'eqc' "BUILTIN\Administrateurs NT\SERVICE LOCAL"
+    Checker $clt 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.13 (L1) Ensure 'Create a pagefile' is set to 'Administrators'" -ForegroundColor Green
-    [string]$cp = AccountsWithUserRight SeTimeZonePrivilege
+    [string]$cp = AccountsWithUserRight SeCreatePagefilePrivilege
     # EN version
     # Checker $cp 'eqc' "BUILTIN\Administrators"
     # FR version
     Checker $cp 'eqc' "BUILTIN\Administrateurs"
 
     Write-Host "2.2.14 (L1) Ensure 'Create a token object' is set to 'No One'" -ForegroundColor Green
-    [string]$cto = AccountsWithUserRight SeTimeZonePrivilege
+    [string]$cto = AccountsWithUserRight SeCreateTokenPrivilege
     # EN version
     # Checker $cto 'eqc' $null
     # FR version
     Checker $cto 'eqc' $null
+
+    Write-Host "2.2.15 (L1) Ensure 'Create global objects' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
+    [string]$cgp = AccountsWithUserRight SeCreateGlobalPrivilege
+    # EN version
+    # Checker $cgp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE NT AUTHORITY\SERVICE"
+    # FR version
+    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
 }
 
 AccountPolicies
