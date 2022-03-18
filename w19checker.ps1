@@ -488,7 +488,8 @@ Function LocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.1 (L1) Ensure 'Access Credential Manager as a trusted caller' is set to 'No One'" -ForegroundColor Green
-    Checker [string]$(AccountsWithUserRight SeTrustedCredManAccessPrivilege) 'eqc' $null
+    [string]$acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
+    Checker $acmtc 'eqc' $null
     
     Write-Host "2.2.4 (L1) Ensure 'Act as part of the operating system' is set to 'No One'" -ForegroundColor Green
     $apos = AccountsWithUserRight SeTcbPrivilege
@@ -538,9 +539,6 @@ Function LocalPolicies {
 
     Write-Host "2.2.14 (L1) Ensure 'Create a token object' is set to 'No One'" -ForegroundColor Green
     [string]$cto = AccountsWithUserRight SeCreateTokenPrivilege
-    # EN version
-    # Checker $cto 'eqc' $null
-    # FR version
     Checker $cto 'eqc' $null
 
     Write-Host "2.2.15 (L1) Ensure 'Create global objects' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
@@ -552,9 +550,6 @@ Function LocalPolicies {
 
     Write-Host "2.2.16 (L1) Ensure 'Create permanent shared objects' is set to 'No One'" -ForegroundColor Green
     [string]$cpso = AccountsWithUserRight SeCreatePermanentPrivilege
-    # EN version
-    # Checker $cgp 'eqc' $null
-    # FR version
     Checker $cpso 'eqc' $null
 
     Write-Host "2.2.19 (L1) Ensure 'Debug programs' is set to 'Administrators'" -ForegroundColor Green
@@ -615,16 +610,10 @@ Function LocalPolicies {
 
     Write-Host "2.2.35 (L1) Ensure 'Lock pages in memory' is set to 'No One'" -ForegroundColor Green
     [string]$lpm = AccountsWithUserRight SeLockMemoryPrivilege
-    # EN version
-    # Checker $lpm 'eqc' $null
-    # FR version
     Checker $lpm 'eqc' $null
     
     Write-Host "2.2.39 (L1) Ensure 'Modify an object label' is set to 'No One'" -ForegroundColor Green
     [string]$mol = AccountsWithUserRight SeRelabelPrivilege
-    # EN version
-    # Checker $mol 'eqc' $null
-    # FR version
     Checker $mol 'eqc' $null
 
     Write-Host "2.2.40 (L1) Ensure 'Modify firmware environment values' is set to 'Administrators'" -ForegroundColor Green
@@ -670,10 +659,15 @@ Function LocalPolicies {
     Checker $rfd 'eqc' "BUILTIN\Administrateurs"
 
     Write-Host "2.2.46 (L1) Ensure 'Shut down the system' is set to 'Administrators'" -ForegroundColor Green
+    [string]$sds = AccountsWithUserRight SeShutdownPrivilege
     # EN version
-    # Checker [string]$(AccountsWithUserRight SeShutdownPrivilege) 'eqc' "BUILTIN\Administrators"
+    # Checker $sds 'eqc' "BUILTIN\Administrators"
     # FR version
-    Checker [string]$(AccountsWithUserRight SeShutdownPrivilege) 'eqc' "BUILTIN\Administrateurs"
+    Checker $sds 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.47 (L1) Ensure 'Synchronize directory service data' is set to 'No One'" -ForegroundColor Green
+    [string]$sdsd = AccountsWithUserRight SeSyncAgentPrivilege
+    Checker $sdsd 'eqc' $null
 }
 
 AccountPolicies
