@@ -196,7 +196,13 @@ Function LocalPolicies {
     $acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
     Checker $acmtc 'eqc' $null
     
-    
+    Write-Host "2.2.4 (L1) Ensure 'Act as part of the operating system' is set to 'No One'" -ForegroundColor Green
+    $apos = AccountsWithUserRight SeTcbPrivilege
+    Checker $apos 'eqc' $null
+
+    Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
+    [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
+    Checker $amqp 'eqc' "BUILTIN\Administrators NT\LOCAL SERVICE NT\NETWORK SERVICE"
 }
 
 AccountPolicies
