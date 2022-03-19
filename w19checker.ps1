@@ -366,7 +366,12 @@ function CheckSecurityOption {
         [Parameter(Mandatory=$true)][string]$paramtotest
     )
 
-    Get-ItemPropertyValue $regpath $paramtotest
+    try {
+        Get-ItemPropertyValue $regpath $paramtotest
+    }
+    catch {
+        Write-Host "The value doesn't exist in the registry" -ForegroundColor Red
+    }
 }
 
 Function Pass {
