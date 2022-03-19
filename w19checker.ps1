@@ -1,4 +1,4 @@
-# only the code necessary for verifying them.
+# Some lines are from POSHSPEC 2.2.8 https://www.powershellgallery.com/packages/poshspec/2.2.8/Content/Public%5CSecurityOption.ps1.
 Add-Type @'
 using System;
 namespace PS_LSA
@@ -360,6 +360,101 @@ function AccountsWithUserRight {
     }
 }
 
+<# Modified version of Phospec
+.SYNOPSIS
+    Test a Security Option.
+.DESCRIPTION
+    Test the setting of a particular security option.
+.PARAMETER Target
+    Specifies the category of the security option.
+.EXAMPLE
+    SecurityOption 'Accounts: Administrator account status'
+#>
+ 
+function SecurityOption {
+    param(
+        [Parameter(Mandatory)]
+        [Alias("Category")]
+        [ValidateSet(
+            "Accounts: Block Microsoft accounts",
+            "Accounts: Limit local account use of blank passwords to console logon only",
+            "Accounts: Rename administrator account",
+            "Accounts: Rename guest account"
+        )]
+        [string]$Target
+    )
+    function GetSecurityPolicy([string]$Category) {
+        function GetPolicyOptionData {
+            [OutputType([hashtable])]
+            Param
+            (
+                [Parameter(Mandatory = $true)]
+                [Microsoft.PowerShell.DesiredStateConfiguration.ArgumentToConfigurationDataTransformation()]
+                [hashtable]
+                $FilePath
+            )
+            return $FilePath
+        }
+
+        $securityOptionData = GetPolicyOptionData -FilePath $("$PSScriptRoot\SecurityOptionData.psd1").Normalize()
+        
+        $SecurityOption = $securityOptionData[$Category]
+
+        If ($SecurityOption) {
+
+            $SecurityPolicyFilePath = Join-Path -Path $env:temp -ChildPath 'SecurityPolicy.inf'
+            secedit.exe /export /cfg $SecurityPolicyFilePath /areas 'SECURITYPOLICY' | Out-Null
+    
+            $policyConfiguration = @{ }
+
+            switch -regex -file $SecurityPolicyFilePath {
+                "^\[(.+)\]" {
+                    # Section
+                    $section = $matches[1]
+                    $policyConfiguration[$section] = @{ }
+                }
+                "(.+?)\s*=(.*)" {
+                    # Key
+                    $name, $value = $matches[1..2] -replace "\*"
+                    $policyConfiguration[$section][$name] = $value.Trim()
+                }
+            }
+
+            $soSection = $SecurityOption.Section
+            $soOptions = $SecurityOption.Option
+            $soValue = $SecurityOption.Value                
+
+            $soResultValue = $policyConfiguration.$soSection.$soValue
+
+            If ($soResultValue) {
+
+                If ($soOptions.GetEnumerator().Name -ne 'String') {
+                    $soResult = ($soOptions.GetEnumerator() | Where-Object { $_.Value -eq $soResultValue }).Name
+                } 
+                Else {
+                    $soOptionsValue = ($soOptions.GetEnumerator() | Where-Object { $_.Name -eq 'String' }).Value
+                    $soResult = $soResultValue -Replace "^$soOptionsValue", ''
+                }
+            }
+            Else {
+                $soResult = $null
+            }
+
+            Return $soResult
+        }
+        Else {
+            Throw "The security option $Category was not found."
+        }
+    }
+
+    # Modify the target string to match what is in the SecurityOptionData.psd1 file
+    $Category = $Target.Replace(':','').Replace(' ','_')
+
+    $Expression = { GetSecurityPolicy -Category '$Category' }
+
+    Write-Host $Expression
+}
+
 Function Pass {
     Write-Output 'The current setting meets the CIS requirements' `r
 
@@ -675,6 +770,13 @@ Function LocalPolicies {
     # Checker $town 'eqc' "BUILTIN\Administrators"
     # FR version
     Checker $town 'eqc' "BUILTIN\Administrateurs"
+
+
+    Write-Host "##########################################" -ForegroundColor Yellow `r
+    Write-Host "LOCAL POLICIES CHAPTER - Security Options" -ForegroundColor Yellow
+    Write-Host "##########################################" -ForegroundColor Yellow `r`n
+
+    SecurityOption "Accounts: Block Microsoft accounts"
 }
 
 AccountPolicies
