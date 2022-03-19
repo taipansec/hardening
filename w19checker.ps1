@@ -692,9 +692,11 @@ Function LocalPolicies {
 
     Write-Host "2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     [string]$secop1 = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "NoConnectedUser"
+    Checker $secop1 'eq' 3
 
     Write-Host "2.3.1.4 (L1) Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is set to 'Enabled'" -ForegroundColor Green
-    [string]$secop1 = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "LimitBlankPasswordUse"
+    [string]$secop2 = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "LimitBlankPasswordUse"
+    Checker $secop2 'eq' 1
 
     Write-Host "2.3.1.5 (L1) Configure 'Accounts: Rename administrator account'" -ForegroundColor Green
     Write-Host "Check manually" -ForegroundColor DarkRed
