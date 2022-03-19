@@ -378,8 +378,8 @@ function SecurityOption {
         [ValidateSet(
             "Accounts: Block Microsoft accounts",
             "Accounts: Limit local account use of blank passwords to console logon only",
-            "Accounts: Rename administrator account",
-            "Accounts: Rename guest account"
+            "Comptes : bloquer les comptes Microsoft",
+            "Comptes : restreindre l’utilisation de mots de passe vides par le compte local à l’ouverture de session console"
         )]
         [string]$Target
     )
