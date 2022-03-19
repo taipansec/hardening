@@ -396,7 +396,7 @@ function SecurityOption {
             return $FilePath
         }
 
-        $securityOptionData = GetPolicyOptionData -FilePath $("$PSScriptRoot\SecurityOptionData.psd1").Normalize()
+        $securityOptionData = GetPolicyOptionData -FilePath $("$PSScriptRoot\secoptions.psd1").Normalize()
         
         $SecurityOption = $securityOptionData[$Category]
 
@@ -450,9 +450,7 @@ function SecurityOption {
     # Modify the target string to match what is in the SecurityOptionData.psd1 file
     $Category = $Target.Replace(':','').Replace(' ','_')
 
-    $Expression = { GetSecurityPolicy -Category '$Category' }
-
-    Write-Host $Expression
+    Write-Host GetSecurityPolicy -Category $Category
 }
 
 Function Pass {
