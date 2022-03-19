@@ -359,98 +359,14 @@ function AccountsWithUserRight {
         Write-Output $lsa.EnumerateAccountsWithUserRight($Priv)
     }
 }
-
-<# Modified version of Phospec
-.SYNOPSIS
-    Test a Security Option.
-.DESCRIPTION
-    Test the setting of a particular security option.
-.PARAMETER Target
-    Specifies the category of the security option.
-.EXAMPLE
-    SecurityOption 'Accounts: Administrator account status'
-#>
  
-function SecurityOption {
+function CheckSecurityOption {
     param(
-        [Parameter(Mandatory)]
-        [Alias("Category")]
-        [ValidateSet(
-            "Accounts: Block Microsoft accounts",
-            "Accounts: Limit local account use of blank passwords to console logon only",
-            "Comptes : bloquer les comptes Microsoft",
-            "Comptes : restreindre l’utilisation de mots de passe vides par le compte local à l’ouverture de session console"
-        )]
-        [string]$Target
+        [Parameter(Mandatory=$true)][string]$regpath,
+        [Parameter(Mandatory=$true)][string]$paramtotest
     )
-    function GetSecurityPolicy([string]$Category) {
-        function GetPolicyOptionData {
-            [OutputType([hashtable])]
-            Param
-            (
-                [Parameter(Mandatory = $true)]
-                [Microsoft.PowerShell.DesiredStateConfiguration.ArgumentToConfigurationDataTransformation()]
-                [hashtable]
-                $FilePath
-            )
-            return $FilePath
-        }
 
-        $securityOptionData = GetPolicyOptionData -FilePath $("$PSScriptRoot\secoptions.psd1").Normalize()
-        
-        $SecurityOption = $securityOptionData[$Category]
-
-        If ($SecurityOption) {
-
-            $SecurityPolicyFilePath = Join-Path -Path $env:temp -ChildPath 'SecurityPolicy.inf'
-            secedit.exe /export /cfg $SecurityPolicyFilePath /areas 'SECURITYPOLICY' | Out-Null
-    
-            $policyConfiguration = @{ }
-
-            switch -regex -file $SecurityPolicyFilePath {
-                "^\[(.+)\]" {
-                    # Section
-                    $section = $matches[1]
-                    $policyConfiguration[$section] = @{ }
-                }
-                "(.+?)\s*=(.*)" {
-                    # Key
-                    $name, $value = $matches[1..2] -replace "\*"
-                    $policyConfiguration[$section][$name] = $value.Trim()
-                }
-            }
-
-            $soSection = $SecurityOption.Section
-            $soOptions = $SecurityOption.Option
-            $soValue = $SecurityOption.Value                
-
-            $soResultValue = $policyConfiguration.$soSection.$soValue
-
-            If ($soResultValue) {
-
-                If ($soOptions.GetEnumerator().Name -ne 'String') {
-                    $soResult = ($soOptions.GetEnumerator() | Where-Object { $_.Value -eq $soResultValue }).Name
-                } 
-                Else {
-                    $soOptionsValue = ($soOptions.GetEnumerator() | Where-Object { $_.Name -eq 'String' }).Value
-                    $soResult = $soResultValue -Replace "^$soOptionsValue", ''
-                }
-            }
-            Else {
-                $soResult = $null
-            }
-
-            Return $soResult
-        }
-        Else {
-            Throw "The security option $Category was not found."
-        }
-    }
-
-    # Modify the target string to match what is in the SecurityOptionData.psd1 file
-    $Category = $Target.Replace(':','').Replace(' ','_')
-
-    Write-Host GetSecurityPolicy -Category $Category
+    Get-ItemPropertyValue $regpath $paramtotest
 }
 
 Function Pass {
@@ -774,7 +690,16 @@ Function LocalPolicies {
     Write-Host "LOCAL POLICIES CHAPTER - Security Options" -ForegroundColor Yellow
     Write-Host "##########################################" -ForegroundColor Yellow `r`n
 
-    SecurityOption "Accounts: Block Microsoft accounts"
+    Write-Host "2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
+    [string]$secop1 = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "NoConnectedUser"
+
+    Write-Host "2.3.1.4 (L1) Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is set to 'Enabled'" -ForegroundColor Green
+    [string]$secop1 = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "LimitBlankPasswordUse"
+
+    Write-Host "2.3.1.5 (L1) Configure 'Accounts: Rename administrator account'" -ForegroundColor Green
+    Write-Host "Check manually" -ForegroundColor DarkRed
+    Write-Host "2.3.1.6 (L1) Configure 'Accounts: Rename guest account'" -ForegroundColor Green
+    Write-Host "Check manually" -ForegroundColor DarkRed
 }
 
 AccountPolicies
