@@ -370,12 +370,20 @@ function CheckSecurityOption {
         Get-ItemPropertyValue $regpath $paramtotest
     }
     catch {
-        Write-Host "The value doesn't exist in the registry" -ForegroundColor Red
+        if ($args[0] -eq 'EN') {
+            Write-Host "Can't retreive value from the registry" -ForegroundColor Red
+        } else {
+            Write-Host "La valeur n'est pas configurée dans la base de registre" -ForegroundColor Red
+        }
     }
 }
 
 Function Pass {
-    Write-Output 'The current setting meets the CIS requirements' `r
+    if ($args[0] -eq 'EN') {
+        Write-Output 'The current setting meets the CIS requirements' `r
+    } else {
+        Write-Output 'La configuration actuelle répond aux critères de durcissement attendus' `r
+    }
 
     [void]$true
 }
@@ -385,10 +393,21 @@ Function Failed {
         [Parameter(Mandatory=$true)][AllowEmptyString()][string]$field
     )
     
-    if ($field -eq "") { $field = "Empty setting" }
-    Write-Host "Currently set to: " -NoNewline
-    Write-Host $field -ForegroundColor Red
-    Write-Output "The policy doesn't meet CIS the requirements" `r
+    if ($field -eq "") {
+        if ($args[0] -eq 'EN') { 
+            $field = "Empty setting"
+        } else { "Aucune valeur trouvée" }
+    }
+    
+    if ($args[0] -eq 'EN') {
+        Write-Host "Currently set to: " -NoNewline
+        Write-Host $field -ForegroundColor Red
+        Write-Output "The configuration doesn't meet CIS the requirements" `r
+    } else {
+        Write-Host "Configuration actuelle: " -NoNewline
+        Write-Host $field -ForegroundColor Red
+        Write-Output "La configuration ne répond pas aux critères de durcissement attendus" `r
+    }
 
     [void]$false
 }
@@ -641,9 +660,9 @@ Function LocalPoliciesEN {
 }
 
 Function LocalPoliciesFR {
-    Write-Host "##################################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - User Rights Assignement" -ForegroundColor Yellow
-    Write-Host "##################################################" -ForegroundColor Yellow `r`n
+    Write-Host "###############################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Droits utilisateurs" -ForegroundColor Yellow
+    Write-Host "###############################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.1 (L1) Ensure 'Access Credential Manager as a trusted caller' is set to 'No One'" -ForegroundColor Green
     [string]$acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
@@ -766,9 +785,9 @@ Function LocalPoliciesFR {
     Checker $town 'eqc' "BUILTIN\Administrateurs"
 
 
-    Write-Host "############################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - Security Options" -ForegroundColor Yellow
-    Write-Host "############################################" -ForegroundColor Yellow `r`n
+    Write-Host "###############################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Options de Sécurité" -ForegroundColor Yellow
+    Write-Host "###############################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     [string]$secop1 = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "NoConnectedUser"
@@ -787,11 +806,12 @@ Function LocalPoliciesFR {
 
 $local = $args[0]
 
-AccountPolicies
 if ($local -eq 'fr') {
+    AccountPolicies
     LocalPoliciesFR
 } elseif ($local -eq 'en') {
+    AccountPolicies
     LocalPoliciesEN
-} else { Write-Host "Wrong locale..." -ForegroundColor Red; Write-Host "[USAGE]: w13checker.ps1 {FR/EN}"; exit 1 }
+} else { Write-Host "Wrong locale..." -ForegroundColor Red; Write-Host "[USAGE]: " $MyInvocation.MyCommand " {FR/EN}"; exit 1 }
 
 # Not finished...
