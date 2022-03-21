@@ -496,7 +496,7 @@ Function AccountPolicies {
     Checker $PasswordPolicy.LockoutObservationWindow.Minutes 'ge' 15
 }
 
-Function LocalPolicies {
+Function LocalPoliciesEN {
     Write-Host "################################################" -ForegroundColor Yellow `r
     Write-Host "LOCAL POLICIES CHAPTER - User Rights Assignement" -ForegroundColor Yellow
     Write-Host "################################################" -ForegroundColor Yellow `r`n
@@ -511,45 +511,27 @@ Function LocalPolicies {
 
     Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
-    # EN version
-    # Checker $amqp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
-    # FR version
-    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $amqp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
 
     Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
     [string]$alla = AccountsWithUserRight SeInteractiveLogonRight
-    # EN version
-    # Checker $alla 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $alla 'eqc' "BUILTIN\Administrateurs"
+    Checker $alla 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.10 (L1) Ensure 'Back up files and directories' is set to 'Administrators'" -ForegroundColor Green
     [string]$bfd = AccountsWithUserRight SeBackupPrivilege
-    # EN version
-    # Checker $bfd 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $bfd 'eqc' "BUILTIN\Administrateurs"
+    Checker $bfd 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.11 (L1) Ensure 'Change the system time' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
     [string]$cst = AccountsWithUserRight SeSystemtimePrivilege
-    # EN version
-    # Checker $cst 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE"
-    # FR version
-    Checker $cst 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE LOCAL"
+    Checker $cst 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE"
 
     Write-Host "2.2.12 (L1) Ensure 'Change the time zone' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
     [string]$clt = AccountsWithUserRight SeTimeZonePrivilege
-    # EN version
-    # Checker $clt 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE"
-    # FR version
-    Checker $clt 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE LOCAL"
+    Checker $clt 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE"
 
     Write-Host "2.2.13 (L1) Ensure 'Create a pagefile' is set to 'Administrators'" -ForegroundColor Green
     [string]$cp = AccountsWithUserRight SeCreatePagefilePrivilege
-    # EN version
-    # Checker $cp 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $cp 'eqc' "BUILTIN\Administrateurs"
+    Checker $cp 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.14 (L1) Ensure 'Create a token object' is set to 'No One'" -ForegroundColor Green
     [string]$cto = AccountsWithUserRight SeCreateTokenPrivilege
@@ -557,10 +539,7 @@ Function LocalPolicies {
 
     Write-Host "2.2.15 (L1) Ensure 'Create global objects' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
     [string]$cgp = AccountsWithUserRight SeCreateGlobalPrivilege
-    # EN version
-    # Checker $cgp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE NT AUTHORITY\SERVICE"
-    # FR version
-    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $cgp 'eqc' "BUILTIN\Administrators NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE NT AUTHORITY\SERVICE"
 
     Write-Host "2.2.16 (L1) Ensure 'Create permanent shared objects' is set to 'No One'" -ForegroundColor Green
     [string]$cpso = AccountsWithUserRight SeCreatePermanentPrivilege
@@ -568,59 +547,35 @@ Function LocalPolicies {
 
     Write-Host "2.2.19 (L1) Ensure 'Debug programs' is set to 'Administrators'" -ForegroundColor Green
     [string]$dpa = AccountsWithUserRight SeDebugPrivilege
-    # EN version
-    # Checker $cgp 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $dpa 'eqc' "BUILTIN\Administrateurs"
+    Checker $dpa 'eqc' "BUILTIN\Administrators"
     
     Write-Host "2.2.22 (L1) Ensure 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
     [string]$dlbj = AccountsWithUserRight SeDenyBatchLogonRight
-    # EN version
-    # Checker $dlbj 'match' "Guests"
-    # FR version
-    Checker $dlbj 'match' "Invités"
+    Checker $dlbj 'match' "Guests"
 
     Write-Host "2.2.23 (L1) Ensure 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
     [string]$dls = AccountsWithUserRight SeDenyServiceLogonRight
-    # EN version
-    # Checker $dls 'match' "Guests"
-    # FR version
-    Checker $dls 'match' "Invités"
+    Checker $dls 'match' "Guests"
 
     Write-Host "2.2.24 (L1) Ensure 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
     [string]$dll = AccountsWithUserRight SeDenyInteractiveLogonRight
-    # EN version
-    # Checker $dll 'match' "Guests"
-    # FR version
-    Checker $dll 'match' "Invités"
+    Checker $dll 'match' "Guests"
 
     Write-Host "2.2.29 (L1) Ensure 'Force shutdown from a remote system' is set to 'Administrators'" -ForegroundColor Green
     [string]$fsrs = AccountsWithUserRight SeRemoteShutdownPrivilege
-    # EN version
-    # Checker $fsrs 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $fsrs 'eqc' "BUILTIN\Administrateurs"
+    Checker $fsrs 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.30 (L1) Ensure 'Generate security audits' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$gsa = AccountsWithUserRight SeAuditPrivilege
-    # EN version
-    # Checker $gsa 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
-    # FR version
-    Checker $gsa 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $gsa 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
 
     Write-Host "2.2.33 (L1) Ensure 'Increase scheduling priority' is set to 'Administrators, Window Manager\Window Manager Group'" -ForegroundColor Green
     [string]$isp = AccountsWithUserRight SeIncreaseBasePriorityPrivilege
-    # EN version
-    # Checker $isp 'eqc' "Window Manager\Window Manager Group BUILTIN\Administrators"
-    # FR version
-    Checker $isp 'eqc' "Window Manager\Window Manager Group BUILTIN\Administrateurs"
+    Checker $isp 'eqc' "Window Manager\Window Manager Group BUILTIN\Administrators"
 
     Write-Host "2.2.34 (L1) Ensure 'Load and unload device drivers' is set to 'Administrators'" -ForegroundColor Green
     [string]$ludd = AccountsWithUserRight SeLoadDriverPrivilege
-    # EN version
-    # Checker $ludd 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $ludd 'eqc' "BUILTIN\Administrateurs"
+    Checker $ludd 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.35 (L1) Ensure 'Lock pages in memory' is set to 'No One'" -ForegroundColor Green
     [string]$lpm = AccountsWithUserRight SeLockMemoryPrivilege
@@ -632,52 +587,31 @@ Function LocalPolicies {
 
     Write-Host "2.2.40 (L1) Ensure 'Modify firmware environment values' is set to 'Administrators'" -ForegroundColor Green
     [string]$mfev = AccountsWithUserRight SeSystemEnvironmentPrivilege
-    # EN version
-    # Checker $mfev 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $mfev 'eqc' "BUILTIN\Administrateurs"
+    Checker $mfev 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.41 (L1) Ensure 'Perform volume maintenance tasks' is set to 'Administrators'" -ForegroundColor Green
     [string]$pvmt = AccountsWithUserRight SeManageVolumePrivilege
-    # EN version
-    # Checker $pvmt 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $pvmt 'eqc' "BUILTIN\Administrateurs"
+    Checker $pvmt 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.42 (L1) Ensure 'Profile single process' is set to 'Administrators'" -ForegroundColor Green
     [string]$psp = AccountsWithUserRight SeProfileSingleProcessPrivilege
-    # EN version
-    # Checker $psp 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $psp 'eqc' "BUILTIN\Administrateurs"
+    Checker $psp 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.43 (L1) Ensure 'Profile system performance' is set to 'Administrators, NT SERVICE\WdiServiceHost'" -ForegroundColor Green
     [string]$psysp = AccountsWithUserRight SeSystemProfilePrivilege
-    # EN version
-    # Checker $psysp 'eqc' "NT SERVICE\WdiServiceHost BUILTIN\Administrators"
-    # FR version
-    Checker $psysp 'eqc' "NT SERVICE\WdiServiceHost BUILTIN\Administrateurs"
+    Checker $psysp 'eqc' "NT SERVICE\WdiServiceHost BUILTIN\Administrators"
 
     Write-Host "2.2.44 (L1) Ensure 'Replace a process level token' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$rplt = AccountsWithUserRight SeAssignPrimaryTokenPrivilege
-    # EN version
-    # Checker $rplt 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
-    # FR version
-    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $rplt 'eqc' "NT AUTHORITY\LOCAL SERVICE NT AUTHORITY\NETWORK SERVICE"
 
     Write-Host "2.2.45 (L1) Ensure 'Restore files and directories' is set to 'Administrators'" -ForegroundColor Green
     [string]$rfd = AccountsWithUserRight SeRestorePrivilege
-    # EN version
-    # Checker $rfd 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $rfd 'eqc' "BUILTIN\Administrateurs"
+    Checker $rfd 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.46 (L1) Ensure 'Shut down the system' is set to 'Administrators'" -ForegroundColor Green
     [string]$sds = AccountsWithUserRight SeShutdownPrivilege
-    # EN version
-    # Checker $sds 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $sds 'eqc' "BUILTIN\Administrateurs"
+    Checker $sds 'eqc' "BUILTIN\Administrators"
 
     Write-Host "2.2.47 (L1) Ensure 'Synchronize directory service data' is set to 'No One'" -ForegroundColor Green
     [string]$sdsd = AccountsWithUserRight SeSyncAgentPrivilege
@@ -685,10 +619,7 @@ Function LocalPolicies {
 
     Write-Host "2.2.48 (L1) Ensure 'Take ownership of files or other objects' is set to 'Administrators'" -ForegroundColor Green
     [string]$town = AccountsWithUserRight SeTakeOwnershipPrivilege
-    # EN version
-    # Checker $town 'eqc' "BUILTIN\Administrators"
-    # FR version
-    Checker $town 'eqc' "BUILTIN\Administrateurs"
+    Checker $town 'eqc' "BUILTIN\Administrators"
 
 
     Write-Host "##########################################" -ForegroundColor Yellow `r
@@ -709,7 +640,158 @@ Function LocalPolicies {
     Write-Host "Check manually" -ForegroundColor DarkRed
 }
 
+Function LocalPoliciesFR {
+    Write-Host "##################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - User Rights Assignement" -ForegroundColor Yellow
+    Write-Host "##################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.2.1 (L1) Ensure 'Access Credential Manager as a trusted caller' is set to 'No One'" -ForegroundColor Green
+    [string]$acmtc = AccountsWithUserRight SeTrustedCredManAccessPrivilege
+    Checker $acmtc 'eqc' $null
+    
+    Write-Host "2.2.4 (L1) Ensure 'Act as part of the operating system' is set to 'No One'" -ForegroundColor Green
+    [string]$apos = AccountsWithUserRight SeTcbPrivilege
+    Checker $apos 'eqc' $null
+
+    Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
+    [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
+    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
+    [string]$alla = AccountsWithUserRight SeInteractiveLogonRight
+    Checker $alla 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.10 (L1) Ensure 'Back up files and directories' is set to 'Administrators'" -ForegroundColor Green
+    [string]$bfd = AccountsWithUserRight SeBackupPrivilege
+    Checker $bfd 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.11 (L1) Ensure 'Change the system time' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    [string]$cst = AccountsWithUserRight SeSystemtimePrivilege
+    Checker $cst 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.12 (L1) Ensure 'Change the time zone' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    [string]$clt = AccountsWithUserRight SeTimeZonePrivilege
+    Checker $clt 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.13 (L1) Ensure 'Create a pagefile' is set to 'Administrators'" -ForegroundColor Green
+    [string]$cp = AccountsWithUserRight SeCreatePagefilePrivilege
+    Checker $cp 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.14 (L1) Ensure 'Create a token object' is set to 'No One'" -ForegroundColor Green
+    [string]$cto = AccountsWithUserRight SeCreateTokenPrivilege
+    Checker $cto 'eqc' $null
+
+    Write-Host "2.2.15 (L1) Ensure 'Create global objects' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
+    [string]$cgp = AccountsWithUserRight SeCreateGlobalPrivilege
+    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.16 (L1) Ensure 'Create permanent shared objects' is set to 'No One'" -ForegroundColor Green
+    [string]$cpso = AccountsWithUserRight SeCreatePermanentPrivilege
+    Checker $cpso 'eqc' $null
+
+    Write-Host "2.2.19 (L1) Ensure 'Debug programs' is set to 'Administrators'" -ForegroundColor Green
+    [string]$dpa = AccountsWithUserRight SeDebugPrivilege
+    Checker $dpa 'eqc' "BUILTIN\Administrateurs"
+    
+    Write-Host "2.2.22 (L1) Ensure 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
+    [string]$dlbj = AccountsWithUserRight SeDenyBatchLogonRight
+    Checker $dlbj 'match' "Invités"
+
+    Write-Host "2.2.23 (L1) Ensure 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
+    [string]$dls = AccountsWithUserRight SeDenyServiceLogonRight
+    Checker $dls 'match' "Invités"
+
+    Write-Host "2.2.24 (L1) Ensure 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
+    [string]$dll = AccountsWithUserRight SeDenyInteractiveLogonRight
+    Checker $dll 'match' "Invités"
+
+    Write-Host "2.2.29 (L1) Ensure 'Force shutdown from a remote system' is set to 'Administrators'" -ForegroundColor Green
+    [string]$fsrs = AccountsWithUserRight SeRemoteShutdownPrivilege
+    Checker $fsrs 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.30 (L1) Ensure 'Generate security audits' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
+    [string]$gsa = AccountsWithUserRight SeAuditPrivilege
+    Checker $gsa 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.33 (L1) Ensure 'Increase scheduling priority' is set to 'Administrators, Window Manager\Window Manager Group'" -ForegroundColor Green
+    [string]$isp = AccountsWithUserRight SeIncreaseBasePriorityPrivilege
+    Checker $isp 'eqc' "Window Manager\Window Manager Group BUILTIN\Administrateurs"
+
+    Write-Host "2.2.34 (L1) Ensure 'Load and unload device drivers' is set to 'Administrators'" -ForegroundColor Green
+    [string]$ludd = AccountsWithUserRight SeLoadDriverPrivilege
+    Checker $ludd 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.35 (L1) Ensure 'Lock pages in memory' is set to 'No One'" -ForegroundColor Green
+    [string]$lpm = AccountsWithUserRight SeLockMemoryPrivilege
+    Checker $lpm 'eqc' $null
+    
+    Write-Host "2.2.39 (L1) Ensure 'Modify an object label' is set to 'No One'" -ForegroundColor Green
+    [string]$mol = AccountsWithUserRight SeRelabelPrivilege
+    Checker $mol 'eqc' $null
+
+    Write-Host "2.2.40 (L1) Ensure 'Modify firmware environment values' is set to 'Administrators'" -ForegroundColor Green
+    [string]$mfev = AccountsWithUserRight SeSystemEnvironmentPrivilege
+    Checker $mfev 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.41 (L1) Ensure 'Perform volume maintenance tasks' is set to 'Administrators'" -ForegroundColor Green
+    [string]$pvmt = AccountsWithUserRight SeManageVolumePrivilege
+    Checker $pvmt 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.42 (L1) Ensure 'Profile single process' is set to 'Administrators'" -ForegroundColor Green
+    [string]$psp = AccountsWithUserRight SeProfileSingleProcessPrivilege
+    Checker $psp 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.43 (L1) Ensure 'Profile system performance' is set to 'Administrators, NT SERVICE\WdiServiceHost'" -ForegroundColor Green
+    [string]$psysp = AccountsWithUserRight SeSystemProfilePrivilege
+    Checker $psysp 'eqc' "NT SERVICE\WdiServiceHost BUILTIN\Administrateurs"
+
+    Write-Host "2.2.44 (L1) Ensure 'Replace a process level token' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
+    [string]$rplt = AccountsWithUserRight SeAssignPrimaryTokenPrivilege
+    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.45 (L1) Ensure 'Restore files and directories' is set to 'Administrators'" -ForegroundColor Green
+    [string]$rfd = AccountsWithUserRight SeRestorePrivilege
+    Checker $rfd 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.46 (L1) Ensure 'Shut down the system' is set to 'Administrators'" -ForegroundColor Green
+    [string]$sds = AccountsWithUserRight SeShutdownPrivilege
+    Checker $sds 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "2.2.47 (L1) Ensure 'Synchronize directory service data' is set to 'No One'" -ForegroundColor Green
+    [string]$sdsd = AccountsWithUserRight SeSyncAgentPrivilege
+    Checker $sdsd 'eqc' $null
+
+    Write-Host "2.2.48 (L1) Ensure 'Take ownership of files or other objects' is set to 'Administrators'" -ForegroundColor Green
+    [string]$town = AccountsWithUserRight SeTakeOwnershipPrivilege
+    Checker $town 'eqc' "BUILTIN\Administrateurs"
+
+
+    Write-Host "############################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Security Options" -ForegroundColor Yellow
+    Write-Host "############################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
+    [string]$secop1 = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "NoConnectedUser"
+    Checker $secop1 'eq' 3
+
+    Write-Host "2.3.1.4 (L1) Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is set to 'Enabled'" -ForegroundColor Green
+    [string]$secop2 = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "LimitBlankPasswordUse"
+    Checker $secop2 'eq' 1
+
+    Write-Host "2.3.1.5 (L1) Configure 'Accounts: Rename administrator account'" -ForegroundColor Green
+    Write-Host "Check manually" -ForegroundColor DarkRed
+    Write-Host "2.3.1.6 (L1) Configure 'Accounts: Rename guest account'" -ForegroundColor Green
+    Write-Host "Check manually" -ForegroundColor DarkRed
+}
+
+
+$local = $args[0]
+
 AccountPolicies
-LocalPolicies
+if ($local -eq 'fr') {
+    LocalPoliciesFR
+} elseif ($local -eq 'en') {
+    LocalPoliciesEN
+} else { Write-Host "Wrong locale..." -ForegroundColor Red; Write-Host "[USAGE]: w13checker.ps1 {FR/EN}"; exit 1 }
 
 # Not finished...
