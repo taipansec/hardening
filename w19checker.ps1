@@ -331,6 +331,119 @@ namespace PS_LSA
 '@
 
 
+################# BANNER ##################
+### https://github.com/stknohg/PSBanner ###
+############# Modified Version ############
+
+function Get-FontFamilies {
+    return (New-Object "System.Drawing.Text.InstalledFontCollection").Families
+}
+
+function Write-Banner {
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ValueFromRemainingArguments = $true)]
+        [psobject]$InputObject,
+        [Alias("f")]
+        [Parameter(Mandatory = $false)]
+        [string]$FontName = "Consolas",
+        [Alias("s")]
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 100)]
+        [int]$FontSize = 10,
+        [Parameter(Mandatory = $false)]
+        [switch]$Bold = $false,
+        [Parameter(Mandatory = $false)]
+        [switch]$Italic = $false,
+        [Parameter(Mandatory = $false)]
+        [switch]$Strikeout = $false,
+        [Parameter(Mandatory = $false)]
+        [switch]$Underline = $false,
+        [Parameter(Mandatory = $false)]
+        [switch]$Stream = $false
+    )
+    
+    $installedFonts = Get-FontFamilies
+    if ($installedFonts -notcontains $FontName) {
+        throw "FontName `"$FontName`" is not installed."
+    }
+
+    try {
+        $message = ""
+        foreach ($object in $InputObject) {
+            if ($message -ne "") {
+                $message += " "
+            }
+            if (Get-Member -InputObject $object -MemberType Properties -Name Name) {
+                $message += $object.Name
+            } else {
+                $message += $object.ToString()
+            }
+        }
+        
+        $fontStyle = [System.Drawing.FontStyle]::Regular
+        if ($Bold) {
+            $fontStyle += [System.Drawing.FontStyle]::Bold
+        }
+        if ($Italic) {
+            $fontStyle += [System.Drawing.FontStyle]::Italic
+        }
+        if ($Strikeout) {
+            $fontStyle += [System.Drawing.FontStyle]::Strikeout
+        } 
+        if ($Underline) {
+            $fontStyle += [System.Drawing.FontStyle]::Underline
+        } 
+        $font = New-Object "System.Drawing.Font" -ArgumentList @($FontName, $FontSize, $fontStyle)
+        
+        $brush = New-Object "System.Drawing.SolidBrush" -ArgumentList @([System.Drawing.Color]::White)
+        $format = New-Object "System.Drawing.StringFormat" -ArgumentList @([System.Drawing.StringFormat]::GenericTypographic)
+        $bitmap = New-Object "System.Drawing.Bitmap" -ArgumentList @(1, 1)
+        $graphic = [System.Drawing.Graphics]::FromImage($bitmap)
+        $measuredSize = $graphic.MeasureString($message, $font, (New-Object "System.Drawing.PointF" -ArgumentList @(0, 0)), $format)
+        $bitmap = New-Object "System.Drawing.Bitmap" -ArgumentList @([int]$measuredSize.Width, [int]$measuredSize.Height)
+        $graphic = [System.Drawing.Graphics]::FromImage($bitmap)
+        $graphic.DrawString($message, $font, $brush , 0, 0, $format)
+        # for debug
+        #$bitmap.Save("$env:TEMP\banner.png", [System.Drawing.Imaging.ImageFormat]::Png)
+
+        $screenWidth = $Host.UI.RawUI.BufferSize.Width
+        $trimWidth = $bitmap.Width
+        if ($trimWidth -gt $screenWidth) {
+            $trimWidth = $screenWidth
+        }
+        $line = ""
+        for ($y = 0; $y -lt $bitmap.Height; $y++) {
+            if ($Stream) {
+                $line = ""
+            }
+            for ($x = 0; $x -lt $trimWidth; $x++) {
+                $p = $bitmap.GetPixel($x, $y)
+                if ($p.R -eq 0 -and $p.G -eq 0 -and $p.B -eq 0) {
+                    $line += " "
+                } else {
+                    $line += "#"
+                }
+            }
+            if ($Stream) {
+                Write-Output $line
+            } else {
+                $line += [System.Environment]::NewLine
+            }
+        }
+        if (-not $Stream) {
+            Write-Output $line
+        }
+    } finally {
+        $brush.Dispose()
+        $format.Dispose()
+        $font.Dispose()
+        $graphic.Dispose()
+        $bitmap.Dispose()
+    }
+}
+
+###########################################
+
 function AccountsWithUserRight {
     <#
         .SYNOPSIS
@@ -359,6 +472,15 @@ function AccountsWithUserRight {
         Write-Output $lsa.EnumerateAccountsWithUserRight($Priv)
     }
 }
+
+function SystemCheck {
+    param(
+        [Parameter(Mandatory=$true)][string]$chk
+    )
+
+    $null = secedit /export /cfg $env:temp/secexport.cfg
+    $(Get-Content $env:temp/secexport.cfg | Select-String $chk).ToString().Split('=')[1].Trim()
+}
  
 function CheckSecurityOption {
     param(
@@ -370,19 +492,19 @@ function CheckSecurityOption {
         Get-ItemPropertyValue $regpath $paramtotest
     }
     catch {
-        if ($args[0] -eq 'EN') {
+        if ($locale -eq 'EN') {
             Write-Host "Can't retreive value from the registry" -ForegroundColor Red
         } else {
-            Write-Host "La valeur n'est pas configurée dans la base de registre" -ForegroundColor Red
+            Write-Host "La valeur n'est pas configurÃ©e dans la base de registre" -ForegroundColor Red
         }
     }
 }
 
 Function Pass {
-    if ($args[0] -eq 'EN') {
+    if ($locale -eq 'EN') {
         Write-Output 'The current setting meets the CIS requirements' `r
     } else {
-        Write-Output 'La configuration actuelle répond aux critères de durcissement attendus' `r
+        Write-Output 'La configuration actuelle rÃ©pond aux critÃ¨res de durcissement attendus' `r
     }
 
     [void]$true
@@ -394,19 +516,19 @@ Function Failed {
     )
     
     if ($field -eq "") {
-        if ($args[0] -eq 'EN') { 
+        if ($locale -eq 'EN') { 
             $field = "Empty setting"
-        } else { "Aucune valeur trouvée" }
+        } else { $field = "Aucune valeur trouvÃ©e" }
     }
     
-    if ($args[0] -eq 'EN') {
+    if ($locale -eq 'EN') {
         Write-Host "Currently set to: " -NoNewline
         Write-Host $field -ForegroundColor Red
         Write-Output "The configuration doesn't meet CIS the requirements" `r
     } else {
         Write-Host "Configuration actuelle: " -NoNewline
         Write-Host $field -ForegroundColor Red
-        Write-Output "La configuration ne répond pas aux critères de durcissement attendus" `r
+        Write-Output "La configuration ne rÃ©pond pas aux critÃ¨res de durcissement attendus" `r
     }
 
     [void]$false
@@ -463,6 +585,11 @@ Function Checker {
              }
         "match" {
                 if ($field -match $req) {
+                    Pass
+                } else { Failed $field }
+             }
+        "not" {
+                if (-not ([string]::IsNullOrEmpty($field))) {
                     Pass
                 } else { Failed $field }
              }
@@ -674,7 +801,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
-    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
     [string]$alla = AccountsWithUserRight SeInteractiveLogonRight
@@ -702,7 +829,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.15 (L1) Ensure 'Create global objects' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
     [string]$cgp = AccountsWithUserRight SeCreateGlobalPrivilege
-    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.16 (L1) Ensure 'Create permanent shared objects' is set to 'No One'" -ForegroundColor Green
     [string]$cpso = AccountsWithUserRight SeCreatePermanentPrivilege
@@ -714,15 +841,15 @@ Function LocalPoliciesFR {
     
     Write-Host "2.2.22 (L1) Ensure 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
     [string]$dlbj = AccountsWithUserRight SeDenyBatchLogonRight
-    Checker $dlbj 'match' "Invités"
+    Checker $dlbj 'match' "InvitÃ©s"
 
     Write-Host "2.2.23 (L1) Ensure 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
     [string]$dls = AccountsWithUserRight SeDenyServiceLogonRight
-    Checker $dls 'match' "Invités"
+    Checker $dls 'match' "InvitÃ©s"
 
     Write-Host "2.2.24 (L1) Ensure 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
     [string]$dll = AccountsWithUserRight SeDenyInteractiveLogonRight
-    Checker $dll 'match' "Invités"
+    Checker $dll 'match' "InvitÃ©s"
 
     Write-Host "2.2.29 (L1) Ensure 'Force shutdown from a remote system' is set to 'Administrators'" -ForegroundColor Green
     [string]$fsrs = AccountsWithUserRight SeRemoteShutdownPrivilege
@@ -730,7 +857,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.30 (L1) Ensure 'Generate security audits' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$gsa = AccountsWithUserRight SeAuditPrivilege
-    Checker $gsa 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $gsa 'eqc' "AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.33 (L1) Ensure 'Increase scheduling priority' is set to 'Administrators, Window Manager\Window Manager Group'" -ForegroundColor Green
     [string]$isp = AccountsWithUserRight SeIncreaseBasePriorityPrivilege
@@ -766,7 +893,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.44 (L1) Ensure 'Replace a process level token' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$rplt = AccountsWithUserRight SeAssignPrimaryTokenPrivilege
-    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RÉSEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.45 (L1) Ensure 'Restore files and directories' is set to 'Administrators'" -ForegroundColor Green
     [string]$rfd = AccountsWithUserRight SeRestorePrivilege
@@ -786,7 +913,7 @@ Function LocalPoliciesFR {
 
 
     Write-Host "###############################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - Options de Sécurité" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Options de SÃ©curitÃ©" -ForegroundColor Yellow
     Write-Host "###############################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
@@ -798,20 +925,205 @@ Function LocalPoliciesFR {
     Checker $secop2 'eq' 1
 
     Write-Host "2.3.1.5 (L1) Configure 'Accounts: Rename administrator account'" -ForegroundColor Green
-    Write-Host "Check manually" -ForegroundColor DarkRed
+    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed
     Write-Host "2.3.1.6 (L1) Configure 'Accounts: Rename guest account'" -ForegroundColor Green
-    Write-Host "Check manually" -ForegroundColor DarkRed
+    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed `r`n
+
+
+    Write-Host "###############################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Session IntÃ©ractive" -ForegroundColor Yellow
+    Write-Host "###############################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.7.1 (L1) Ensure 'Interactive logon: Do not require CTRL+ALT+DEL' is set to 'Disabled'" -ForegroundColor Green
+    [string]$ilcad = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "disablecad"
+    Checker $ilcad 'eq' 0
+
+    Write-Host "2.3.7.2 (L1) Ensure 'Interactive logon: Don't display last signed-in' is set to 'Enabled'" -ForegroundColor Green
+    [string]$illsi = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "dontdisplaylastusername"
+    Checker $illsi 'eq' 1
+    
+    Write-Host "2.3.7.3 (L1) Ensure 'Interactive logon: Machine inactivity limit' is set to '900 or fewer second(s), but not 0'" -ForegroundColor Green
+    [string]$ilmil = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "InactivityTimeoutSecs"
+    $res = (Checker $ilmil 'le' 900)
+    if ($res -eq 'True') {
+        Checker $ilmil 'ne' 0
+    } else { $res }
+
+    Write-Host "2.3.7.4 (L1) Configure 'Interactive logon: Message text for users attempting to log on'" -ForegroundColor Green
+    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed
+    Write-Host "2.3.7.5 (L1) Configure 'Interactive logon: Message title for users attempting to log on'" -ForegroundColor Green
+    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed `r`n
+
+    Write-Host "2.3.7.7 (L1) Ensure 'Interactive logon: Prompt user to change password before expiration' is set to 'between 5 and 14 days'" -ForegroundColor Green
+    [string]$ilpup = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\" "PasswordExpiryWarning"
+    Checker $ilpup 'ge' 5
+
+
+    Write-Host "###########################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Microsoft Network Client (en relation avec SMB)" -ForegroundColor Yellow
+    Write-Host "###########################################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.8.1 (L1) Ensure 'Microsoft network client: Digitally sign communications (always)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$dsc = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\" "RequireSecuritySignature"
+    Checker $dsc 'eq' 1
+
+    Write-Host "2.3.8.2 (L1) Ensure 'Microsoft network client: Digitally sign communications (if server agrees)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$dscs = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\" "EnableSecuritySignature"
+    Checker $dscs 'eq' 1
+
+    Write-Host "2.3.8.3 (L1) Ensure 'Microsoft network client: Send unencrypted password to third-party SMB servers' is set to 'Disabled'" -ForegroundColor Green
+    [string]$dscs = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\" "EnablePlainTextPassword"
+    Checker $dscs 'eq' 0
+
+
+    Write-Host "###########################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Microsoft Network Server (en relation avec SMB)" -ForegroundColor Yellow
+    Write-Host "###########################################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.9.1 (L1) Ensure 'Microsoft network server: Amount of idle time required before suspending session' is set to '15 or fewer minute(s)'" -ForegroundColor Green
+    [string]$autodc = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "autodisconnect"
+    Checker $autodc 'le' 15
+
+    Write-Host "2.3.9.2 (L1) Ensure 'Microsoft network server: Digitally sign communications (always)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$dsca = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "RequireSecuritySignature"
+    Checker $dsca 'eq' 1
+
+    Write-Host "2.3.9.3 (L1) Ensure 'Microsoft network server: Digitally sign communications (if client agrees)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$dscc = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "EnableSecuritySignature"
+    Checker $dscc 'eq' 1
+
+    Write-Host "2.3.9.4 (L1) Ensure 'Microsoft network server: Disconnect clients when logon hours expire' is set to 'Enabled'" -ForegroundColor Green
+    [string]$dcl = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "EnableForcedLogOff"
+    Checker $dcl 'eq' 1
+
+
+    Write-Host "#########################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - AccÃ¨s RÃ©seaux" -ForegroundColor Yellow
+    Write-Host "#########################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.10.1 (L1) Ensure 'Network access: Allow anonymous SID/Name translation' is set to 'Disabled'" -ForegroundColor Green
+    $nano = SystemCheck "LSAAnonymousNameLookup"
+    Checker $nano 'eq' 0
+
+    Write-Host "2.3.10.5 (L1) Ensure 'Network access: Let Everyone permissions apply to anonymous users' is set to 'Disabled'" -ForegroundColor Green
+    [string]$naep = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "EveryoneIncludesAnonymous"
+    Checker $naep 'eq' 0
+
+    Write-Host "2.3.10.8 (L1) Configure 'Network access: Remotely accessible registry paths' is configured" -ForegroundColor Green
+    [string]$nare = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\SecurePipeServers\Winreg\AllowedExactPaths\" "Machine"
+    Checker $nare 'not' $null
+
+    Write-Host "2.3.10.9 (L1) Configure 'Network access: Remotely accessible registry paths and sub-paths' is configured" -ForegroundColor Green
+    [string]$narep = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\SecurePipeServers\Winreg\AllowedPaths\" "Machine"
+    Checker $narep 'not' $null
+
+    Write-Host "2.3.10.10 (L1) Ensure 'Network access: Restrict anonymous access to Named Pipes and Shares' is set to 'Enabled'" -ForegroundColor Green
+    [string]$nara = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "RestrictNullSessAccess"
+    Checker $nara 'eq' 1
+
+    Write-Host "2.3.10.12 (L1) Ensure 'Network access: Shares that can be accessed anonymously' is set to 'None'" -ForegroundColor Green
+    [string]$nas = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "NullSessionShares"
+    Checker $nas 'eqc' 'None'
+
+    Write-Host "2.3.10.13 (L1) Ensure 'Network access: Sharing and security model for local accounts' is set to 'Classic - local users authenticate as themselves'" -ForegroundColor Green
+    [string]$nass = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "ForceGuest"
+    Checker $nass 'eq' 0
+
+
+    Write-Host "############################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - SÃ©curitÃ© RÃ©seaux" -ForegroundColor Yellow
+    Write-Host "############################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.11.1 (L1) Ensure 'Network security: Allow Local System to use computer identity for NTLM' is set to 'Enabled'" -ForegroundColor Green
+    [string]$nsls = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "UseMachineId"
+    Checker $nsls 'eq' 1
+
+    Write-Host "2.3.11.2 (L1) Ensure 'Network security: Allow LocalSystem NULL session fallback' is set to 'Disabled'" -ForegroundColor Green
+    [string]$nsnull = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0\" "allownullsessionfallback"
+    Checker $nsnull 'eq' 0
+
+    Write-Host "2.3.11.3 (L1) Ensure 'Network Security: Allow PKU2U authentication requests to this computer to use online identities' is set to 'Disabled'" -ForegroundColor Green
+    [string]$nspku2u = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\pku2u\" "AllowOnlineID"
+    Checker $nspku2u 'eq' 0
+
+    Write-Host "2.3.11.4 (L1) Ensure 'Network security: Configure encryption types allowed for Kerberos' is set to 'AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types'" -ForegroundColor Green
+    [string]$nsenc = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\" "SupportedEncryptionTypes"
+    # Need to be rechecked
+    Write-Host "Path not found" -ForegroundColor Red
+
+    Write-Host "2.3.11.5 (L1) Ensure 'Network security: Do not store LAN Manager hash value on next password change' is set to 'Enabled'" -ForegroundColor Green
+    [string]$nslan = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "NoLMHash"
+    Checker $nslan 'eq' 1
+
+    Write-Host "2.3.11.6 (L1) Ensure 'Network security: Force logoff when logon hours expire' is set to 'Enabled'" -ForegroundColor Green
+    $nslog = SystemCheck "ForceLogoffWhenHourExpire"
+    Checker $nslog 'eq' 1
+
+    Write-Host "2.3.11.7 (L1) Ensure 'Network security: LAN Manager authentication level' is set to 'Send NTLMv2 response only. Refuse LM & NTLM'" -ForegroundColor Green
+    [string]$nsauth = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "LmCompatibilityLevel"
+    Checker $nsauth 'eq' 5
+
+    Write-Host "2.3.11.8 (L1) Ensure 'Network security: LDAP client signing requirements' is set to 'Negotiate signing' or higher" -ForegroundColor Green
+    [string]$nsldap = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LDAP\" "LDAPClientIntegrity"
+    Checker $nsldap 'eq' 1
+
+    Write-Host "2.3.11.9 (L1) Ensure 'Network security: Minimum session security for NTLM SSP based (including secure RPC) clients' is set to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
+    [string]$nscli = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0\" "NTLMMinClientSec"
+    Checker $nscli 'eq' 537395200
+
+    Write-Host "2.3.11.10 (L1) Ensure 'Network security: Minimum session security for NTLM SSP based (including secure RPC) servers' is set to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
+    [string]$nssrv = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0\" "NTLMMinServerSec"
+    Checker $nssrv 'eq' 537395200
+
+
+    Write-Host "############################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - ContrÃ´le de compte d'utilisateur" -ForegroundColor Yellow
+    Write-Host "############################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.17.1 (L1) Ensure 'User Account Control: Admin Approval Mode for the Built-in Administrator account' is set to 'Enabled'" -ForegroundColor Green
+    [string]$uacadm = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "FilterAdministratorToken"
+    Checker $uacadm 'eq' 1
+
+    Write-Host "2.3.17.2 (L1) Ensure 'User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode' is set to 'Prompt for consent on the secure desktop'" -ForegroundColor Green
+    [string]$uacprt = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "ConsentPromptBehaviorAdmin"
+    Checker $uacprt 'eq' 2
+
+    Write-Host "2.3.17.3 (L1) Ensure 'User Account Control: Behavior of the elevation prompt for standard users' is set to 'Automatically deny elevation requests'" -ForegroundColor Green
+    [string]$uacprtu = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "ConsentPromptBehaviorUser"
+    Checker $uacprtu 'eq' 0
+
+    Write-Host "2.3.17.4 (L1) Ensure 'User Account Control: Detect application installations and prompt for elevation' is set to 'Enabled'" -ForegroundColor Green
+    [string]$uacdap = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "EnableInstallerDetection"
+    Checker $uacdap 'eq' 1
+
+    Write-Host "2.3.17.5 (L1) Ensure 'User Account Control: Only elevate UIAccess applications that are installed in secure locations' is set to 'Enabled'" -ForegroundColor Green
+    [string]$uacui = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "EnableSecureUIAPaths"
+    Checker $uacui 'eq' 1
+
+    Write-Host "2.3.17.6 (L1) Ensure 'User Account Control: Run all administrators in Admin Approval Mode' is set to 'Enabled'" -ForegroundColor Green
+    [string]$uacadm = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "EnableLUA"
+    Checker $uacadm 'eq' 1
+
+    Write-Host "2.3.17.7 (L1) Ensure 'User Account Control: Switch to the secure desktop when prompting for elevation' is set to 'Enabled'" -ForegroundColor Green
+    [string]$uacsw = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "PromptOnSecureDesktop"
+    Checker $uacsw 'eq' 1
+
+    Write-Host "2.3.17.8 (L1) Ensure 'User Account Control: Virtualize file and registry write failures to per-user locations' is set to 'Enabled'" -ForegroundColor Green
+    [string]$uacvf = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" "EnableVirtualization"
+    Checker $uacvf 'eq' 1
 }
 
 
-$local = $args[0]
+################# MAIN #################
 
-if ($local -eq 'fr') {
+Write-Banner "WinSRV 2019 Policy Checker" -Bold -Italic -Underline
+
+$locale = $args[0]
+
+if ($locale -eq 'fr') {
     AccountPolicies
     LocalPoliciesFR
-} elseif ($local -eq 'en') {
+} elseif ($locale -eq 'en') {
     AccountPolicies
     LocalPoliciesEN
 } else { Write-Host "Wrong locale..." -ForegroundColor Red; Write-Host "[USAGE]: " $MyInvocation.MyCommand " {FR/EN}"; exit 1 }
-
-# Not finished...
