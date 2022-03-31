@@ -1119,6 +1119,7 @@ Function LocalPoliciesFR {
 Write-Banner "WinSRV 2019 Policy Checker" -Bold -Italic -Underline
 
 $locale = $args[0]
+$servertype = $args[1]
 
 if ($locale -eq 'fr') {
     AccountPolicies
