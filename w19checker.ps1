@@ -504,7 +504,7 @@ Function Pass {
     if ($locale -eq 'EN') {
         Write-Output 'The current setting meets the CIS requirements' `r
     } else {
-        Write-Output 'La configuration actuelle rÃ©pond aux critÃ¨res de durcissement attendus' `r
+        Write-Output 'La configuration actuelle répond aux critères de durcissement attendus' `r
     }
 
     [void]$true
@@ -518,7 +518,7 @@ Function Failed {
     if ($field -eq "") {
         if ($locale -eq 'EN') { 
             $field = "Empty setting"
-        } else { $field = "Aucune valeur trouvÃ©e" }
+        } else { $field = "Aucune valeur trouvée" }
     }
     
     if ($locale -eq 'EN') {
@@ -528,7 +528,7 @@ Function Failed {
     } else {
         Write-Host "Configuration actuelle: " -NoNewline
         Write-Host $field -ForegroundColor Red
-        Write-Output "La configuration ne rÃ©pond pas aux critÃ¨res de durcissement attendus" `r
+        Write-Output "La configuration ne répond pas aux critères de durcissement attendus" `r
     }
 
     [void]$false
@@ -930,6 +930,38 @@ Function LocalPoliciesFR {
     Write-Host "Vérification manuelle nécessaire" -ForegroundColor DarkRed `r`n
 
 
+    Write-Host "#############################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Membre du domaine" -ForegroundColor Yellow
+    Write-Host "#############################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.6.1 (L1) Ensure 'Domain member: Digitally encrypt or sign secure channel data (always)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$digenc = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "RequireSignOrSeal"
+    Checker $digenc 'eq' 1
+
+    Write-Host "2.3.6.2 (L1) Ensure 'Domain member: Digitally encrypt secure channel data (when possible)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$digencp = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "SealSecureChannel"
+    Checker $digencp 'eq' 1
+
+    Write-Host "2.3.6.3 (L1) Ensure 'Domain member: Digitally sign secure channel data (when possible)' is set to 'Enabled'" -ForegroundColor Green
+    [string]$digencs = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "SignSecureChannel"
+    Checker $digencs 'eq' 1
+
+    Write-Host "2.3.6.4 (L1) Ensure 'Domain member: Disable machine account password changes' is set to 'Disabled'" -ForegroundColor Green
+    [string]$disap = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "DisablePasswordChange"
+    Checker $disap 'eq' 0
+
+    Write-Host "2.3.6.5 (L1) Ensure 'Domain member: Maximum machine account password age' is set to '30 or fewer days, but not 0'" -ForegroundColor Green
+    [string]$maxp = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "MaximumPasswordAge"
+    $dmres = (Checker $maxp 'le' 30)
+    if ($dmres -eq 'True') {
+        Checker $maxp 'ne' 0
+    } else { $dmres }
+
+    Write-Host "2.3.6.6 (L1) Ensure 'Domain member: Require strong (Windows 2000 or later) session key' is set to 'Enabled'" -ForegroundColor Green
+    [string]$stkey = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "RequireStrongKey"
+    Checker $stkey 'eq' 1
+
+
     Write-Host "###############################################" -ForegroundColor Yellow `r
     Write-Host "CHAPITRE : LOCAL POLICIES - Session Intéractive" -ForegroundColor Yellow
     Write-Host "###############################################" -ForegroundColor Yellow `r`n
@@ -1193,7 +1225,7 @@ Function DCPolicies {
 
 function MBPolicies {
     Write-Host "####################################################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - Droits utilisateurs  - MEMBRE DE DOMAINE" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Droits utilisateurs  - MEMBRE DU DOMAINE" -ForegroundColor Yellow
     Write-Host "####################################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.3 (L1) Ensure 'Access this computer from the network' is set to 'Administrators, Authenticated Users'" -ForegroundColor Green
@@ -1227,6 +1259,54 @@ function MBPolicies {
     Write-Host "2.2.38 (L1) Ensure 'Manage auditing and security log' is set to 'Administrators'" -ForegroundColor Green
     [string]$masmb = AccountsWithUserRight SeSecurityPrivilege 
     Checker $masmb 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "#################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Options de sécurité MEMBRE DU DOMAINE" -ForegroundColor Yellow
+    Write-Host "#################################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.1.1 (L1) Ensure 'Accounts: Administrator account status' is set to 'Disabled'" -ForegroundColor Green
+    $adasmb = SystemCheck "EnableAdminAccount"
+    Checker $adasmb 'eq' 0
+
+    Write-Host "2.3.1.3 (L1) Ensure 'Accounts: Guest account status' is set to 'Disabled'" -ForegroundColor Green
+    $gasmb = SystemCheck "EnableGuestAccount"
+    Checker $gasmb 'eq' 0
+
+    Write-Host "#################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Session intéractive MEMBRE DU DOMAINE" -ForegroundColor Yellow
+    Write-Host "#################################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.7.8 (L1) Ensure 'Interactive logon: Require Domain Controller Authentication to unlock workstation' is set to 'Enabled'" -ForegroundColor Green
+    [string]$ilmb = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\" "ForceUnlockLogon"
+    Checker $ilmb 'eq' 1
+
+    Write-Host "############################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Serveur Réseau MEMBRE DU DOMAINE" -ForegroundColor Yellow
+    Write-Host "############################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.9.5 (L1) Ensure 'Microsoft network server: Server SPN target name validation level' is set to 'Accept if provided by client' or higher" -ForegroundColor Green
+    [string]$spnmb = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "SmbServerNameHardeningLevel"
+    Checker $spnmb 'eq' 1
+
+    Write-Host "##########################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Acces réseau MEMBRE DU DOMAINE" -ForegroundColor Yellow
+    Write-Host "##########################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.10.2 (L1) Ensure 'Network access: Do not allow anonymous enumeration of SAM accounts' is set to 'Enabled'" -ForegroundColor Green
+    [string]$sammb = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "RestrictAnonymousSAM"
+    Checker $sammb 'eq' 1
+
+    Write-Host "2.3.10.3 (L1) Ensure 'Network access: Do not allow anonymous enumeration of SAM accounts and shares' is set to 'Enabled'" -ForegroundColor Green
+    [string]$samshmb = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "RestrictAnonymous"
+    Checker $samshmb 'eq' 1
+
+    Write-Host "2.3.10.7 (L1) Configure 'Network access: Named Pipes that can be accessed anonymously'" -ForegroundColor Green
+    [string]$pipmb = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "NullSessionPipes"
+    Checker $piphmb 'eq' $null
+
+    Write-Host "2.3.10.11 (L1) Ensure 'Network access: Restrict clients allowed to make remote calls to SAM' is set to 'Administrators: Remote Access: Allow'" -ForegroundColor Green
+    [string]$samalmb = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "RestrictRemoteSAM"
+    Checker $samalmb 'eq' "Administrators: Remote Access: Allow"
 }
 
 
