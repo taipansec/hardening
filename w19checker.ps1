@@ -1120,7 +1120,7 @@ Function DCPolicies {
 
     Write-Host "2.2.2 (L1) Ensure 'Access this computer from the network' is set to 'Administrators, Authenticated Users, ENTERPRISE DOMAIN CONTROLLERS'" -ForegroundColor Green
     [string]$acna = AccountsWithUserRight SeNetworkLogonRight
-    Checker $acna 'eqc' "BUILTIN\Administrateurs, AUTORITE NT\Utilisateurs authentifiés, Contrôleurs de domaine d'entreprise"
+    Checker $acna 'eqc' "BUILTIN\Administrateurs AUTORITE NT\Utilisateurs authentifiés Contrôleurs de domaine d'entreprise"
     
     Write-Host "2.2.5 (L1) Ensure 'Add workstations to domain' is set to 'Administrators'" -ForegroundColor Green
     [string]$awd = AccountsWithUserRight SeMachineAccountPrivilege
@@ -1197,12 +1197,36 @@ function MBPolicies {
     Write-Host "####################################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.3 (L1) Ensure 'Access this computer from the network' is set to 'Administrators, Authenticated Users'" -ForegroundColor Green
-    [string]$acna = AccountsWithUserRight SeNetworkLogonRight
-    Checker $acna 'eqc' "BUILTIN\Administrateurs, AUTORITE NT\Utilisateurs authentifiés"
+    [string]$acnamb = AccountsWithUserRight SeNetworkLogonRight
+    Checker $acnamb 'eqc' "BUILTIN\Administrateurs AUTORITE NT\Utilisateurs authentifiés"
 
     Write-Host "2.2.9 (L1) Ensure 'Allow log on through Remote Desktop Services' is set to 'Administrators, Remote Desktop Users'" -ForegroundColor Green
-    [string]$acna = AccountsWithUserRight SeRemoteInteractiveLogonRight
-    Checker $acna 'eqc' "BUILTIN\Administrateurs, BUILTIN\Utilisateurs du Bureau à distance"
+    [string]$almb = AccountsWithUserRight SeRemoteInteractiveLogonRight
+    Checker $almb 'eqc' "BUILTIN\Utilisateurs du Bureau à distance BUILTIN\Administrateurs"
+
+    Write-Host "2.2.18 (L1) Ensure 'Create symbolic links' is set to 'Administrators, NT VIRTUAL MACHINE\Virtual Machines'" -ForegroundColor Green
+    [string]$cslmb = AccountsWithUserRight SeCreateSymbolicLinkPrivilege
+    Checker $cslmb 'eqc' "BUILTIN\Administrateurs NT VIRTUAL MACHINE\Machines virtuelles"
+
+    Write-Host "2.2.21 (L1) Ensure 'Deny access to this computer from the network' to include 'Guests, Local account and member of Administrators group'" -ForegroundColor Green
+    [string]$danmb = AccountsWithUserRight SeDenyNetworkLogonRight
+    Checker $danmb 'match' "(Invités) (compte local) (membre des groupes Administrateurs)"
+
+    Write-Host "2.2.26 (L1) Ensure 'Deny log on through Remote Desktop Services' is set to 'Guests, Local account'" -ForegroundColor Green
+    [string]$dlgmb = AccountsWithUserRight SeDenyRemoteInteractiveLogonRight
+    Checker $dlgmb 'match' "(Invités) (compte local)"
+
+    Write-Host "2.2.28 (L1) Ensure 'Enable computer and user accounts to be trusted for delegation' is set to 'No One'" -ForegroundColor Green
+    [string]$delegmb = AccountsWithUserRight SeEnableDelegationPrivilege
+    Checker $delegmb 'eqc' $null
+
+    Write-Host "2.2.32 (L1) Ensure 'Impersonate a client after authentication' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE' and (when the Web Server (IIS) Role with Web Services Role Service is installed) 'IIS_IUSRS'" -ForegroundColor Green
+    [string]$impmb = AccountsWithUserRight SeImpersonatePrivilege
+    Checker $impmb 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RéSEAU AUTORITE NT\SERVICE LOCAL"
+
+    Write-Host "2.2.38 (L1) Ensure 'Manage auditing and security log' is set to 'Administrators'" -ForegroundColor Green
+    [string]$masmb = AccountsWithUserRight SeSecurityPrivilege 
+    Checker $masmb 'eqc' "BUILTIN\Administrateurs"
 }
 
 
