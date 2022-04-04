@@ -801,7 +801,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.6 (L1) Ensure 'Adjust memory quotas for a process' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$amqp = AccountsWithUserRight SeIncreaseQuotaPrivilege
-    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $amqp 'eqc' "BUILTIN\Administrateurs AUTORITE NT\SERVICE RéSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
     [string]$alla = AccountsWithUserRight SeInteractiveLogonRight
@@ -829,7 +829,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.15 (L1) Ensure 'Create global objects' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
     [string]$cgp = AccountsWithUserRight SeCreateGlobalPrivilege
-    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $cgp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RéSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.16 (L1) Ensure 'Create permanent shared objects' is set to 'No One'" -ForegroundColor Green
     [string]$cpso = AccountsWithUserRight SeCreatePermanentPrivilege
@@ -841,15 +841,15 @@ Function LocalPoliciesFR {
     
     Write-Host "2.2.22 (L1) Ensure 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
     [string]$dlbj = AccountsWithUserRight SeDenyBatchLogonRight
-    Checker $dlbj 'match' "InvitÃ©s"
+    Checker $dlbj 'match' "Invités"
 
     Write-Host "2.2.23 (L1) Ensure 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
     [string]$dls = AccountsWithUserRight SeDenyServiceLogonRight
-    Checker $dls 'match' "InvitÃ©s"
+    Checker $dls 'match' "Invités"
 
     Write-Host "2.2.24 (L1) Ensure 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
     [string]$dll = AccountsWithUserRight SeDenyInteractiveLogonRight
-    Checker $dll 'match' "InvitÃ©s"
+    Checker $dll 'match' "Invités"
 
     Write-Host "2.2.29 (L1) Ensure 'Force shutdown from a remote system' is set to 'Administrators'" -ForegroundColor Green
     [string]$fsrs = AccountsWithUserRight SeRemoteShutdownPrivilege
@@ -857,7 +857,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.30 (L1) Ensure 'Generate security audits' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$gsa = AccountsWithUserRight SeAuditPrivilege
-    Checker $gsa 'eqc' "AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $gsa 'eqc' "AUTORITE NT\SERVICE RéSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.33 (L1) Ensure 'Increase scheduling priority' is set to 'Administrators, Window Manager\Window Manager Group'" -ForegroundColor Green
     [string]$isp = AccountsWithUserRight SeIncreaseBasePriorityPrivilege
@@ -893,7 +893,7 @@ Function LocalPoliciesFR {
 
     Write-Host "2.2.44 (L1) Ensure 'Replace a process level token' is set to 'LOCAL SERVICE, NETWORK SERVICE'" -ForegroundColor Green
     [string]$rplt = AccountsWithUserRight SeAssignPrimaryTokenPrivilege
-    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $rplt 'eqc' "AUTORITE NT\SERVICE RéSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.45 (L1) Ensure 'Restore files and directories' is set to 'Administrators'" -ForegroundColor Green
     [string]$rfd = AccountsWithUserRight SeRestorePrivilege
@@ -913,7 +913,7 @@ Function LocalPoliciesFR {
 
 
     Write-Host "###############################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - Options de SÃ©curitÃ©" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Options de Sécurité" -ForegroundColor Yellow
     Write-Host "###############################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
@@ -925,13 +925,13 @@ Function LocalPoliciesFR {
     Checker $secop2 'eq' 1
 
     Write-Host "2.3.1.5 (L1) Configure 'Accounts: Rename administrator account'" -ForegroundColor Green
-    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed
+    Write-Host "Vérification manuelle nécessaire" -ForegroundColor DarkRed
     Write-Host "2.3.1.6 (L1) Configure 'Accounts: Rename guest account'" -ForegroundColor Green
-    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed `r`n
+    Write-Host "Vérification manuelle nécessaire" -ForegroundColor DarkRed `r`n
 
 
     Write-Host "###############################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - Session IntÃ©ractive" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Session Intéractive" -ForegroundColor Yellow
     Write-Host "###############################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.7.1 (L1) Ensure 'Interactive logon: Do not require CTRL+ALT+DEL' is set to 'Disabled'" -ForegroundColor Green
@@ -1031,7 +1031,7 @@ Function LocalPoliciesFR {
 
 
     Write-Host "############################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - SÃ©curitÃ© RÃ©seaux" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Sécurité Réseaux" -ForegroundColor Yellow
     Write-Host "############################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.11.1 (L1) Ensure 'Network security: Allow Local System to use computer identity for NTLM' is set to 'Enabled'" -ForegroundColor Green
@@ -1077,7 +1077,7 @@ Function LocalPoliciesFR {
 
 
     Write-Host "############################################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - ContrÃ´le de compte d'utilisateur" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Controle de compte d'utilisateur" -ForegroundColor Yellow
     Write-Host "############################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.17.1 (L1) Ensure 'User Account Control: Admin Approval Mode for the Built-in Administrator account' is set to 'Enabled'" -ForegroundColor Green
@@ -1114,13 +1114,13 @@ Function LocalPoliciesFR {
 }
 
 Function DCPolicies {
-    Write-Host "###############################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - Droits utilisateurs" -ForegroundColor Yellow
-    Write-Host "###############################################" -ForegroundColor Yellow `r`n
+    Write-Host "########################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Droits utilisateurs  - CONTROLEUR DE DOMAINE" -ForegroundColor Yellow
+    Write-Host "########################################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.2 (L1) Ensure 'Access this computer from the network' is set to 'Administrators, Authenticated Users, ENTERPRISE DOMAIN CONTROLLERS'" -ForegroundColor Green
     [string]$acna = AccountsWithUserRight SeNetworkLogonRight
-    Checker $acna 'eqc' "BUILTIN\Administrateurs, Utilisateurs AuthentifiÃ‰s, Controleur de domaine d'entreprise"
+    Checker $acna 'eqc' "BUILTIN\Administrateurs, AUTORITE NT\Utilisateurs authentifiés, Contrôleurs de domaine d'entreprise"
     
     Write-Host "2.2.5 (L1) Ensure 'Add workstations to domain' is set to 'Administrators'" -ForegroundColor Green
     [string]$awd = AccountsWithUserRight SeMachineAccountPrivilege
@@ -1136,11 +1136,11 @@ Function DCPolicies {
 
     Write-Host "2.2.20 (L1) Ensure 'Deny access to this computer from the network' to include 'Guests'" -ForegroundColor Green
     [string]$dag = AccountsWithUserRight SeDenyNetworkLogonRight
-    Checker $dag 'match' "InvitÃ‰s"
+    Checker $dag 'match' "Invités"
 
     Write-Host "2.2.25 (L1) Ensure 'Deny log on through Remote Desktop Services' to include 'Guests'" -ForegroundColor Green
     [string]$dlg = AccountsWithUserRight SeDenyRemoteInteractiveLogonRight
-    Checker $dlg 'match' "InvitÃ‰s"
+    Checker $dlg 'match' "Invités"
 
     Write-Host "2.2.27 (L1) Ensure 'Enable computer and user accounts to be trusted for delegation' is set to 'Administrators'" -ForegroundColor Green
     [string]$deleg = AccountsWithUserRight SeEnableDelegationPrivilege
@@ -1148,15 +1148,61 @@ Function DCPolicies {
 
     Write-Host "2.2.31 (L1) Ensure 'Impersonate a client after authentication' is set to 'Administrators, LOCAL SERVICE, NETWORK SERVICE, SERVICE'" -ForegroundColor Green
     [string]$imp = AccountsWithUserRight SeImpersonatePrivilege
-    Checker $imp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RÃ‰SEAU AUTORITE NT\SERVICE LOCAL"
+    Checker $imp 'eqc' "AUTORITE NT\SERVICE BUILTIN\Administrateurs AUTORITE NT\SERVICE RéSEAU AUTORITE NT\SERVICE LOCAL"
 
     Write-Host "2.2.36 (L2) Ensure 'Log on as a batch job' is set to 'Administrators'" -ForegroundColor Green
     [string]$batch = AccountsWithUserRight SeBatchLogonRight 
     Checker $batch 'eqc' "BUILTIN\Administrateurs"
 
     Write-Host "2.2.37 (L1) Ensure 'Manage auditing and security log' is set to 'Administrators' and (when Exchange is running in the environment) 'Exchange Servers'" -ForegroundColor Green
-    [string]$batch = AccountsWithUserRight SeSecurityPrivilege 
-    Checker $batch 'eqc' "BUILTIN\Administrateurs"
+    [string]$mas = AccountsWithUserRight SeSecurityPrivilege 
+    Checker $mas 'eqc' "BUILTIN\Administrateurs"
+
+    Write-Host "#####################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Options de sécurité CONTROLEUR DE DOMAINE" -ForegroundColor Yellow
+    Write-Host "#####################################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.5.1 (L1) Ensure 'Domain controller: Allow server operators to schedule tasks' is set to 'Disabled'" -ForegroundColor Green
+    [string]$secsrvt = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Control\Lsa\" "SubmitControl"
+    Checker $secsrvt 'eq' 0
+
+    Write-Host "2.3.5.2 (L1) Ensure 'Domain controller: Allow vulnerable Netlogon secure channel connections' is set to 'Not Configured'" -ForegroundColor Green
+    [string]$vuln = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "vulnerablechannelallowlist"
+    Checker $vuln 'eq' $null
+
+    Write-Host "2.3.5.3 (L1) Ensure 'Domain controller: LDAP server channel binding token requirements' is set to 'Always'" -ForegroundColor Green
+    [string]$ldapb = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\NTDS\Parameters\" "LdapEnforceChannelBinding"
+    Checker $ldapb 'eq' 1
+
+    Write-Host "2.3.5.4 (L1) Ensure 'Domain controller: LDAP server signing requirements' is set to 'Require signing'" -ForegroundColor Green
+    [string]$ldaps = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\NTDS\Parameters\" "LDAPServerIntegrity"
+    Checker $ldaps 'eq' 2
+
+    Write-Host "2.3.5.5 (L1) Ensure 'Domain controller: Refuse machine account password changes' is set to 'Disabled'" -ForegroundColor Green
+    [string]$ldaps = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters\" "RefusePasswordChange"
+    Checker $ldaps 'eq' 0
+
+    Write-Host "##############################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Acces réseau CONTROLEUR DE DOMAINE" -ForegroundColor Yellow
+    Write-Host "##############################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.3.10.6 (L1) Configure 'Network access: Named Pipes that can be accessed anonymously'" -ForegroundColor Green
+    [string]$ldaps = CheckSecurityOption  "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters\" "NullSessionPipes"
+    Checker $ldaps 'eq' $null
+}
+
+function MBPolicies {
+    Write-Host "####################################################################" -ForegroundColor Yellow `r
+    Write-Host "CHAPITRE : LOCAL POLICIES - Droits utilisateurs  - MEMBRE DE DOMAINE" -ForegroundColor Yellow
+    Write-Host "####################################################################" -ForegroundColor Yellow `r`n
+
+    Write-Host "2.2.3 (L1) Ensure 'Access this computer from the network' is set to 'Administrators, Authenticated Users'" -ForegroundColor Green
+    [string]$acna = AccountsWithUserRight SeNetworkLogonRight
+    Checker $acna 'eqc' "BUILTIN\Administrateurs, AUTORITE NT\Utilisateurs authentifiés"
+
+    Write-Host "2.2.9 (L1) Ensure 'Allow log on through Remote Desktop Services' is set to 'Administrators, Remote Desktop Users'" -ForegroundColor Green
+    [string]$acna = AccountsWithUserRight SeRemoteInteractiveLogonRight
+    Checker $acna 'eqc' "BUILTIN\Administrateurs, BUILTIN\Utilisateurs du Bureau à distance"
 }
 
 
@@ -1167,15 +1213,22 @@ Write-Banner "WinSRV 2019 Policy Checker" -Bold -Italic -Underline
 $locale = $args[0]
 $servertype = $args[1]
 
-if ($locale -eq 'fr') {
+if ($locale -eq 'fr' -And $servertype -eq 'dc') {
     AccountPolicies
     LocalPoliciesFR
-    if ($servertype -eq 'dc') {
-        DCPolicies
-    } elseif ($servertype -eq 'mb') {
-        MBPolicies
-    } else { Write-Host "Wrong server type..." -ForegroundColor Red; Write-Host "[USAGE]: " $MyInvocation.MyCommand " {FR/EN} {DC/MB}"; exit 1 }
-} elseif ($locale -eq 'en') {
+    DCPolicies
+} elseif ($locale -eq 'fr' -And $servertype -eq 'mb') {
+    AccountPolicies
+    LocalPoliciesFR
+    MBPolicies
+    } else { Write-Host "Wrong locale or server type..." -ForegroundColor Red; Write-Host "[USAGE]: " $MyInvocation.MyCommand " {FR/EN} {DC/MB}"; exit 1 }
+
+if ($locale -eq 'en' -And $servertype -eq 'dc') {
     AccountPolicies
     LocalPoliciesEN
-} else { Write-Host "Missing locale or server type..." -ForegroundColor Red; Write-Host "[USAGE]: " $MyInvocation.MyCommand " {FR/EN} {DC/MB}"; exit 1 }
+    DCPoliciesEN
+} elseif ($locale -eq 'en' -And $servertype -eq 'mb') {
+    AccountPolicies
+    LocalPoliciesFR
+    MBPolicies
+} else { Write-Host "Wrong locale or server type..." -ForegroundColor Red; Write-Host "[USAGE]: " $MyInvocation.MyCommand " {FR/EN} {DC/MB}"; exit 1 }
