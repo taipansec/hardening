@@ -1030,7 +1030,7 @@ Function LocalPoliciesFR {
 
 
     Write-Host "#########################################" -ForegroundColor Yellow `r
-    Write-Host "CHAPITRE : LOCAL POLICIES - AccÃ¨s RÃ©seaux" -ForegroundColor Yellow
+    Write-Host "CHAPITRE : LOCAL POLICIES - Acces Réseaux" -ForegroundColor Yellow
     Write-Host "#########################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.3.10.1 (L1) Ensure 'Network access: Allow anonymous SID/Name translation' is set to 'Disabled'" -ForegroundColor Green
