@@ -982,9 +982,9 @@ Function LocalPoliciesFR {
     } else { $res }
 
     Write-Host "2.3.7.4 (L1) Configure 'Interactive logon: Message text for users attempting to log on'" -ForegroundColor Green
-    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed
+    Write-Host "Vérification manuelle nécessaire" -ForegroundColor DarkRed
     Write-Host "2.3.7.5 (L1) Configure 'Interactive logon: Message title for users attempting to log on'" -ForegroundColor Green
-    Write-Host "VÃ©rification manuelle nÃ©cessaire" -ForegroundColor DarkRed `r`n
+    Write-Host "Vérification manuelle nécessaire" -ForegroundColor DarkRed `r`n
 
     Write-Host "2.3.7.7 (L1) Ensure 'Interactive logon: Prompt user to change password before expiration' is set to 'between 5 and 14 days'" -ForegroundColor Green
     [string]$ilpup = CheckSecurityOption  "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\" "PasswordExpiryWarning"
