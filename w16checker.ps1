@@ -1312,7 +1312,7 @@ function MBPolicies {
 
 ################# MAIN #################
 
-Write-Banner "WinSRV 2019 Policy Checker" -Bold -Italic -Underline
+Write-Banner "WinSRV 2016 Policy Checker" -Bold -Italic -Underline
 
 $locale = $args[0]
 $servertype = $args[1]
