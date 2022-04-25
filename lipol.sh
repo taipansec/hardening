@@ -81,12 +81,19 @@ function condchk() {
             status "nok"
         fi
         ;;
+    'notnull')
+        if [ -z "$arg2" ]
+        then
+            status "nok"
+        else
+            status "ok"
+        fi
+        ;;
     esac
 }
 
 function echotitle() {
     title=$1
-
     echo -e "$byellow"; echo "$title"; echo -e "$color_off"
 }
 function fsmount() {
@@ -96,7 +103,7 @@ function fsmount() {
     mpcheck="Checking via modprobe for: $fstype"
     lmcheck="Checking via lsmod for: $fstype"
 
-    echotitle $title
+    echotitle "$title"
     echo $mpcheck
     mp=$(modprobe -n -v $fstype | grep -E '($fstype|install)')
     condchk 'eq' $mp $re
@@ -116,6 +123,9 @@ function fscheck() {
     fsmount "1.1.1.7 Ensure mounting of udf filesystems is disabled" "udf"
 
     echotitle "1.1.2 Ensure /tmp is configured"
+    mt=$(findmnt -n /tmp)
+    grp=$(echo $mt | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw,nosuid,nodev,noexec)')
+    condchk 'notnull' $grp
 }
 
 fscheck
