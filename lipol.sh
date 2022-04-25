@@ -84,17 +84,28 @@ function condchk() {
     esac
 }
 
+function fsmount() {
+    title=$1
+    fstype=$2
+    re="install /bin/true"
+    mpcheck="Checking via modprobe..."
+    lmcheck="Checking via lsmod..."
+
+    echo -e "$byellow"; echo "$title"; echo -e "$color_off"
+    echo $mpcheck
+    mp=$(modprobe -n -v $fstype | grep -E '($fstype|install)')
+    condchk 'eq' $mp $re
+    echo $lmcheck
+    lm=$(lsmod | grep $fstype)
+    condchk 'null' $lm
+}
+
 function fscheck() {
     banner "File system configuration chapter"
 
-    echo -e "$byellow"; echo "1.1.1.1 Ensure mounting of cramfs filesystems is disabled"; echo -e "$color_off"
-    echo "Checking via modprobe..."
-    mpcramfs=$(modprobe -n -v cramfs | grep -E '(cramfs|install)')
-    re="install /bin/true"
-    condchk 'eq' $mpcramfs $re
-    echo "Checking via lsmod..."
-    lmcramfs=$(lsmod | grep cramfs)
-    condchk 'null' $lmcramfs
+    fsmount "1.1.1.1 Ensure mounting of cramfs filesystems is disabled" "cramfs"
+    fsmount "1.1.1.2 Ensure mounting of freevxfs filesystems is disabled" "freevxfs"
+    fsmount "1.1.1.3 Ensure mounting of jffs2 filesystems is disabled" "jffs2"
 }
 
 fscheck
