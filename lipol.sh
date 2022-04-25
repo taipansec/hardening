@@ -51,12 +51,13 @@ banner()
 
 function status() {
     rep=$1
+    retval=${2:-}
 
-    if [[ ${rep} =~ "ok" ]]
+    if [[ $rep == "ok" ]]
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: ${rep}"; echo -e "$color_off"
+        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: $retval"; echo -e "$color_off"
     fi
 }
 
@@ -67,7 +68,7 @@ function condchk() {
 
     case $op in
     'eq')
-        if [[ ${arg2} =~ ${arg3} ]]
+        if [[ $arg2 == $arg3 ]]
         then
             status "ok"
         else
@@ -75,19 +76,19 @@ function condchk() {
         fi
         ;;
     'null')
-        if [ -n "${arg2}" ]
+        if [ -n "$arg2" ]
         then
-            status "nok"
+            status "nok" $arg2
         else
             status "ok"
         fi
         ;;
     'notnull')
-        if [ -n "${arg2}" ]
+        if [ -n "$arg2" ]
         then
             status "ok"
         else
-            status "nok"
+            status "nok" $arg2
         fi
         ;;
     esac
