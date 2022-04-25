@@ -84,14 +84,19 @@ function condchk() {
     esac
 }
 
+function echotitle() {
+    title=$1
+
+    echo -e "$byellow"; echo "$title"; echo -e "$color_off"
+}
 function fsmount() {
     title=$1
     fstype=$2
     re="install /bin/true"
-    mpcheck="Checking via modprobe..."
-    lmcheck="Checking via lsmod..."
+    mpcheck="Checking via modprobe for: $fstype"
+    lmcheck="Checking via lsmod for: $fstype"
 
-    echo -e "$byellow"; echo "$title"; echo -e "$color_off"
+    echotitle $title
     echo $mpcheck
     mp=$(modprobe -n -v $fstype | grep -E '($fstype|install)')
     condchk 'eq' $mp $re
@@ -106,6 +111,11 @@ function fscheck() {
     fsmount "1.1.1.1 Ensure mounting of cramfs filesystems is disabled" "cramfs"
     fsmount "1.1.1.2 Ensure mounting of freevxfs filesystems is disabled" "freevxfs"
     fsmount "1.1.1.3 Ensure mounting of jffs2 filesystems is disabled" "jffs2"
+    fsmount "1.1.1.4 Ensure mounting of hfs filesystems is disabled" "hfs"
+    fsmount "1.1.1.5 Ensure mounting of hfsplus filesystems is disabled" "hfsplus"
+    fsmount "1.1.1.7 Ensure mounting of udf filesystems is disabled" "udf"
+
+    echotitle "1.1.2 Ensure /tmp is configured"
 }
 
 fscheck
