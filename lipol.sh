@@ -4,7 +4,8 @@
 
 bred='\033[1;31m'
 bgreen='\033[1;32m'
-Color_Off='\033[0m'
+byellow='\033[1;33m'
+color_off='\033[0m'
 
 echo -e "$bred"
 echo '
@@ -37,7 +38,7 @@ echo '
 UBUNTU SERVER 20.04 - CIS L1 COMPLIANCY CHECKER
 Author: TAIPANSEC
 '
-echo -e "$Color_Off"
+echo -e "$color_off"
 
 banner()
 {
@@ -52,9 +53,9 @@ function status() {
     rep=$1
     if [[ $rep =~ "ok" ]]
     then
-        echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$Color_Off"
+        echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: $arg1"; echo -e "$Color_Off"
+        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: $arg1"; echo -e "$color_off"
     fi
 }
 
@@ -86,11 +87,14 @@ function condchk() {
 function fscheck() {
     banner "File system configuration chapter"
 
-    echo '1.1.1.1 Ensure mounting of cramfs filesystems is disabled'
+    echo -e "$byellow"; echo "1.1.1.1 Ensure mounting of cramfs filesystems is disabled"; echo -e "$color_off"
+    echo "Checking via modprobe..."
     mpcramfs=$(modprobe -n -v cramfs | grep -E '(cramfs|install)')
     re="install /bin/true"
     condchk 'eq' $mpcramfs $re
+    echo "Checking via lsmod..."
     lmcramfs=$(lsmod | grep cramfs)
     condchk 'null' $lmcramfs
 }
 
+fscheck
