@@ -52,11 +52,11 @@ banner()
 function status() {
     rep=$1
 
-    if [[ $rep =~ "ok" ]]
+    if [[ ${rep} =~ "ok" ]]
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: $rep"; echo -e "$color_off"
+        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: ${rep}"; echo -e "$color_off"
     fi
 }
 
@@ -67,7 +67,7 @@ function condchk() {
 
     case $op in
     'eq')
-        if [[ $arg2 =~ $arg3 ]]
+        if [[ ${arg2} =~ ${arg3} ]]
         then
             status "ok"
         else
@@ -75,19 +75,19 @@ function condchk() {
         fi
         ;;
     'null')
-        if [[ -n "$arg2" ]]
+        if [ -n "${arg2}" ]
         then
-            status "ok"
-        else
             status "nok"
+        else
+            status "ok"
         fi
         ;;
     'notnull')
-        if [[ -n "$arg2" ]]
+        if [ -n "${arg2}" ]
         then
-            status "nok"
-        else
             status "ok"
+        else
+            status "nok"
         fi
         ;;
     esac
@@ -107,10 +107,10 @@ function fsmount() {
     echotitle "$title"
     echo $mpcheck
     mp=$(modprobe -n -v $fstype | grep -E '($fstype|install)')
-    condchk 'eq' "$mp" "$re'
+    condchk 'eq' $mp $re
     echo $lmcheck
     lm=$(lsmod | grep $fstype)
-    condchk 'null' "$lm"
+    condchk 'null' $lm
 }
 
 function fscheck() {
@@ -126,7 +126,7 @@ function fscheck() {
     echotitle "1.1.2 Ensure /tmp is configured"
     mt=$(findmnt -n /tmp)
     grp=$(echo $mt | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw,nosuid,nodev,noexec)')
-    condchk 'notnull' "$grp"
+    condchk 'notnull' $grp
 }
 
 fscheck
