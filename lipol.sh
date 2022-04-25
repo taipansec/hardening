@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 # Author : TAIPANSEC
 
 bred='\033[1;31m'
-bgreen = '\033[1;32m'
+bgreen='\033[1;32m'
 Color_Off='\033[0m'
 
 echo -e "$bred"
@@ -49,7 +49,7 @@ banner()
 }
 
 function status() {
-    rep = $1
+    rep=$1
     if [[ $rep =~ "ok" ]]
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$Color_Off"
@@ -59,9 +59,9 @@ function status() {
 }
 
 function condchk() {
-    op = $1
-    arg2 = $2
-    arg3 = ${3:-}
+    op=$1
+    arg2=$2
+    arg3=${3:-}
 
     case $op in
     'eq')
@@ -87,10 +87,10 @@ function fscheck() {
     banner "File system configuration chapter"
 
     echo '1.1.1.1 Ensure mounting of cramfs filesystems is disabled'
-    mpcramfs = $(modprobe -n -v cramfs | grep -E '(cramfs|install)')
-    re = "install /bin/true"
+    mpcramfs=$(modprobe -n -v cramfs | grep -E '(cramfs|install)')
+    re="install /bin/true"
     condchk 'eq' $mpcramfs $re
-    lmcramfs = $(lsmod | grep cramfs)
+    lmcramfs=$(lsmod | grep cramfs)
     condchk 'null' $lmcramfs
 }
 
