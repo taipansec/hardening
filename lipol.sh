@@ -5,6 +5,7 @@
 bred='\033[1;31m'
 bgreen='\033[1;32m'
 byellow='\033[1;33m'
+bwhite='\033[1;37m'
 color_off='\033[0m'
 
 echo -e "$bred"
@@ -57,7 +58,7 @@ function status() {
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'; echo -e "$byellow"; echo "$retval"; echo -e "$color_off"
+        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'; echo -e "$bwhite"; echo "$retval"; echo -e "$color_off"
     fi
 }
 
@@ -96,7 +97,7 @@ function condchk() {
 
 function echotitle() {
     title=$1
-    echo -e "$byellow"; echo "$title"; echo "-------------------------------------------------------------------------"; echo -e "$color_off"
+    echo -e "$byellow"; echo "$title"; echo "-------------------------------------------------------------------------" | tr -d '\n'; echo -e "$color_off"
 }
 
 function fsmount() {
@@ -125,7 +126,7 @@ function mntchk() {
         igrep=$(echo $finder | grep -v $param)
         condchk 'null' "$igrep"
     else
-        echo -e "$bred"; echo "$fs is not mounted" | tr -d '\n'; echo -e "$color_off"
+        echo -e "$bwhite"; echo "$fs is not mounted" | tr -d '\n'; echo -e "$color_off"
         status "nok"
     fi
 }
