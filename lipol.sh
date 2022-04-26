@@ -96,7 +96,7 @@ function condchk() {
 
 function echotitle() {
     title=$1
-    echo -e "$byellow"; echo "$title"; echo -e "$color_off"
+    echo -e "$byellow"; echo "$title" | tr -d '\n'; echo -e "$color_off"
 }
 function fsmount() {
     title=$1
@@ -118,9 +118,13 @@ function tmpchk() {
     finder=$1
     param=$2
 
-    igrep=$(echo $finder | grep -v $param)
-
-    condchk 'eq' "$igrep"
+    if [[ -n "$finder" ]]
+    then
+        igrep=$(echo $finder | grep -v $param)
+        condchk 'eq' "$igrep"
+    else
+        echo -e "$bred"; echo "/tmp is not mounted" | tr -d '\n'; echo -e "$color_off"
+        status "nok"
 }
 
 function fscheck() {
