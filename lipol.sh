@@ -51,13 +51,13 @@ banner()
 
 function status() {
     rep=$1
-    retval=${2:-}
+    retval=${2:-empty}
 
     if [[ $rep == "ok" ]]
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: "; echo -e "$byellow"; echo "$retval"; echo -e "$color_off"
+        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'; echo -e "$byellow"; echo "$retval"; echo -e "$color_off"
     fi
 }
 
@@ -68,7 +68,7 @@ function condchk() {
 
     case $op in
     'eq')
-        if [[ $arg2 == $arg3 ]]
+        if [[ "$arg2" == "$arg3" ]]
         then
             status "ok"
         else
@@ -78,7 +78,7 @@ function condchk() {
     'null')
         if [ -n "$arg2" ]
         then
-            status "nok" $arg2
+            status "nok" "$arg2"
         else
             status "ok"
         fi
@@ -88,7 +88,7 @@ function condchk() {
         then
             status "ok"
         else
-            status "nok" $arg2
+            status "nok" "$arg2"
         fi
         ;;
     esac
@@ -106,12 +106,12 @@ function fsmount() {
     lmcheck="Checking via lsmod for: $fstype"
 
     echotitle "$title"
-    echo $mpcheck
+    echo "$mpcheck"
     mp=$(modprobe -n -v $fstype | grep -E '($fstype|install)')
-    condchk 'eq' $mp $re
-    echo $lmcheck
-    lm=$(lsmod | grep $fstype)
-    condchk 'null' $lm
+    condchk 'eq' "$mp" "$re"
+    echo "$lmcheck"
+    lm=$(lsmod | grep "$fstype")
+    condchk 'null' "$lm"
 }
 
 function tmpchk() {
@@ -120,7 +120,7 @@ function tmpchk() {
 
     igrep=$(echo $finder | grep -v $param)
 
-    condchk 'notnull' $igrep
+    condchk 'eq' "$igrep"
 }
 
 function fscheck() {
@@ -136,10 +136,10 @@ function fscheck() {
     echotitle "1.1.2 Ensure /tmp is configured"
     mt=$(findmnt -n /tmp)
     grp=$(echo $mt | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw)')
-    condchk 'notnull' $grp
+    condchk 'notnull' "$grp"
 
     echotitle "1.1.3 Ensure nodev option set on /tmp partition"
-    tmpchk $mt "nodev"
+    tmpchk "$mt" "nodev"
 }
 
 fscheck
