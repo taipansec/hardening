@@ -96,8 +96,9 @@ function condchk() {
 
 function echotitle() {
     title=$1
-    echo -e "$byellow"; echo "$title" | tr -d '\n'; echo -e "$color_off"
+    echo -e "$byellow"; echo "$title"; echo "-------------------------------------------------------------------------"; echo -e "$color_off"
 }
+
 function fsmount() {
     title=$1
     fstype=$2
@@ -106,25 +107,27 @@ function fsmount() {
     lmcheck="Checking via lsmod for: $fstype"
 
     echotitle "$title"
-    echo "$mpcheck"
+    echo "$mpcheck" | tr -d '\n'
     mp=$(modprobe -n -v $fstype | grep -E '($fstype|install)')
     condchk 'eq' "$mp" "$re"
-    echo "$lmcheck"
+    echo "$lmcheck" | tr -d '\n'
     lm=$(lsmod | grep "$fstype")
     condchk 'null' "$lm"
 }
 
-function tmpchk() {
+function mntchk() {
     finder=$1
     param=$2
+    fs=$3
 
     if [[ -n "$finder" ]]
     then
         igrep=$(echo $finder | grep -v $param)
-        condchk 'eq' "$igrep"
+        condchk 'null' "$igrep"
     else
-        echo -e "$bred"; echo "/tmp is not mounted" | tr -d '\n'; echo -e "$color_off"
+        echo -e "$bred"; echo "$fs is not mounted" | tr -d '\n'; echo -e "$color_off"
         status "nok"
+    fi
 }
 
 function fscheck() {
@@ -138,12 +141,26 @@ function fscheck() {
     fsmount "1.1.1.7 Ensure mounting of udf filesystems is disabled" "udf"
 
     echotitle "1.1.2 Ensure /tmp is configured"
-    mt=$(findmnt -n /tmp)
-    grp=$(echo $mt | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw)')
+    tmp=$(findmnt -n /tmp)
+    grp=$(echo $tmp | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw)')
     condchk 'notnull' "$grp"
-
     echotitle "1.1.3 Ensure nodev option set on /tmp partition"
-    tmpchk "$mt" "nodev"
+    mntchk "$tmp" "nodev" "tmp"
+    echotitle "1.1.4 Ensure nosuid option set on /tmp partition"
+    mntchk "$tmp" "nosuid" "tmp"
+    echotitle "1.1.5 Ensure noexec option set on /tmp partition"
+    mntchk "$tmp" "noexec" "tmp"
+
+    echotitle "1.1.6 Ensure /dev/shm is configured"
+    shm=$(findmnt -n /dev/shm)
+    grp=$(echo $shm | grep -E '^(/dev/shm\s*tmpfs\s*tmpfs\s*rw)')
+    condchk 'notnull' "$grp"
+    echotitle "1.1.7 Ensure nodev option set on /dev/shm partition"
+    mntchk "$shm" "nodev" "/dev/shm"
+    echotitle "1.1.8 Ensure nosuid option set on /dev/shm partition"
+    mntchk "$shm" "nosuid" "/dev/shm"
+    echotitle "1.1.9 Ensure noexec option set on /dev/shm partition"
+    mntchk "$shm" "noexec" "/dev/shm"
 }
 
 fscheck
