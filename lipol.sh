@@ -57,7 +57,7 @@ function status() {
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet CIS the requirements"; echo "Actual value is: $retval"; echo -e "$color_off"
+        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: "; echo -e "$byellow"; echo "$retval"; echo -e "$color_off"
     fi
 }
 
@@ -114,6 +114,15 @@ function fsmount() {
     condchk 'null' $lm
 }
 
+function tmpchk() {
+    finder=$1
+    param=$2
+
+    igrep=$(echo $finder | grep -v $param)
+
+    condchk 'notnull' $igrep
+}
+
 function fscheck() {
     banner "File system configuration chapter"
 
@@ -126,8 +135,11 @@ function fscheck() {
 
     echotitle "1.1.2 Ensure /tmp is configured"
     mt=$(findmnt -n /tmp)
-    grp=$(echo $mt | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw,nosuid,nodev,noexec)')
+    grp=$(echo $mt | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw)')
     condchk 'notnull' $grp
+
+    echotitle "1.1.3 Ensure nodev option set on /tmp partition"
+    tmpchk $mt "nodev"
 }
 
 fscheck
