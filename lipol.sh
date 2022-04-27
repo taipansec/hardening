@@ -52,13 +52,17 @@ banner()
 
 function status() {
     rep=$1
-    retval=${2:-empty}
+    retval=( ${2:-empty} )
 
     if [[ $rep == "ok" ]]
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'; echo -e "$bwhite"; echo "$retval"; echo -e "$color_off"
+        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'
+        for n in $retval
+        do
+            echo -e "$bwhite"; echo "$n"; echo -e "$color_off"
+        done
     fi
 }
 
@@ -146,11 +150,11 @@ function fscheck() {
     grp=$(echo $tmp | grep -E '^(/tmp\s*tmpfs\s*tmpfs\s*rw)')
     condchk 'notnull' "$grp"
     echotitle "1.1.3 Ensure nodev option set on /tmp partition"
-    mntchk "$tmp" "nodev" "tmp"
+    mntchk "$tmp" "nodev" "/tmp"
     echotitle "1.1.4 Ensure nosuid option set on /tmp partition"
-    mntchk "$tmp" "nosuid" "tmp"
+    mntchk "$tmp" "nosuid" "/tmp"
     echotitle "1.1.5 Ensure noexec option set on /tmp partition"
-    mntchk "$tmp" "noexec" "tmp"
+    mntchk "$tmp" "noexec" "/tmp"
 
     echotitle "1.1.6 Ensure /dev/shm is configured"
     shm=$(findmnt -n /dev/shm)
@@ -162,6 +166,29 @@ function fscheck() {
     mntchk "$shm" "nosuid" "/dev/shm"
     echotitle "1.1.9 Ensure noexec option set on /dev/shm partition"
     mntchk "$shm" "noexec" "/dev/shm"
+
+    var=$(findmnt -n /var/tmp)
+    echotitle "1.1.12 Ensure /var/tmp partition includes the nodev option"
+    mntchk "$var" "nodev" "/var/tmp"
+    echotitle "1.1.13 Ensure /var/tmp partition includes the nosuid option"
+    mntchk "$var" "nosuid" "/var/tmp"
+    echotitle "1.1.14 Ensure /var/tmp partition includes the noexec option"
+    mntchk "$var" "noexec" "/var/tmp"
+
+    home=$(findmnt -n /home)
+    echotitle "1.1.18 Ensure /home partition includes the nodev option"
+    mntchk "$home" "nodev" "/home"
+    
+    echotitle "1.1.19 Ensure nodev option set on removable media partitions"
+    echo -e "$bgreen"; echo "Manual check - not applicable if no removable media are in use"; echo -e "$color_off"
+    echotitle "1.1.20 Ensure nosuid option set on removable media partitions"
+    echo -e "$bgreen"; echo "Manual check - not applicable if no removable media are in use"; echo -e "$color_off"
+    echotitle "1.1.21 Ensure noexec option set on removable media partitions"
+    echo -e "$bgreen"; echo "Manual check - not applicable if no removable media are in use"; echo -e "$color_off"
+
+    echotitle "1.1.22 Ensure sticky bit is set on all world-writable directories"
+    df=( $(df --local -P | awk '{if (NR!=1) print $6}' | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null) )
+    condchk 'null' "$df"
 }
 
 fscheck
