@@ -52,17 +52,13 @@ banner()
 
 function status() {
     rep=$1
-    retval=( ${2:-empty} )
+    retval=${2:-empty}
 
     if [[ $rep == "ok" ]]
     then
         echo -e "$bgreen"; echo "The current setting meets the CIS requirements"; echo -e "$color_off"
     else
-        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'
-        for n in $retval
-        do
-            echo -e "$bwhite"; echo "$n"; echo -e "$color_off"
-        done
+        echo -e "$bred"; echo "The configuration doesn't meet the CIS requirements"; echo "Actual value is: " | tr -d '\n'; echo -e "$bwhite"; echo "$retval"; echo -e "$color_off"
     fi
 }
 
@@ -188,7 +184,7 @@ function fscheck() {
 
     echotitle "1.1.22 Ensure sticky bit is set on all world-writable directories"
     df=( $(df --local -P | awk '{if (NR!=1) print $6}' | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null) )
-    condchk 'null' "$df"
+    echo $df
 }
 
 fscheck
