@@ -7,11 +7,11 @@ from reportlab.graphics import renderPDF
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from sys import _MEIPASS
 from os.path import join
 from csv import reader
 from sys import exit
 
+hardening = "/opt/hardening/Linux/"
 
 colorPass = [76, 175, 80]
 colorFail = [244, 67, 54]
@@ -488,11 +488,11 @@ def createPDF(ubu20cis):
     recommendations = get_recommendations(option)
 
     pdfmetrics.registerFont(
-        TTFont('SF-Mono-Heavy', join(_MEIPASS, 'fonts/SF-Mono-Heavy.ttf')))
+        TTFont('SF-Mono-Heavy', join(hardening, 'fonts/SF-Mono-Heavy.ttf')))
     pdfmetrics.registerFont(
-        TTFont('SF-Pro-Rounded-Bold', join(_MEIPASS, 'fonts/SF-Pro-Rounded-Bold.ttf')))
+        TTFont('SF-Pro-Rounded-Bold', join(hardening, 'fonts/SF-Pro-Rounded-Bold.ttf')))
     pdfmetrics.registerFont(TTFont(
-        'SF-Pro-Rounded-Heavy', join(_MEIPASS, 'fonts/SF-Pro-Rounded-Heavy.ttf')))
+        'SF-Pro-Rounded-Heavy', join(hardening, 'fonts/SF-Pro-Rounded-Heavy.ttf')))
 
     pdf = canvas.Canvas(ubu20cis.split('.csv')[
                         0] + '.pdf', pagesize=A4, bottomup=0, pageCompression=1)

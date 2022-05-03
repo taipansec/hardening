@@ -8,10 +8,11 @@ from os import system, path, geteuid
 from modules.benchmarks import test
 from enlighten import get_manager
 from fabulous.image import Image
-from sys import exit, _MEIPASS
+from sys import exit
 from itertools import repeat
 from csv import writer
 
+hardening = "/opt/hardening/Linux/"
 
 # getting optional arguments from user
 options = parser.parse_args()
@@ -23,7 +24,7 @@ local = localtime()
 
 # setting distribution to independent if nothing is specified
 if options.dist == None:
-    options.dist = 'ind'
+    options.dist = 'ubu'
 
 # recommendations will contain list of benchmark recommendation ID's
 # based on parameters passed during script call
@@ -44,7 +45,7 @@ if not geteuid() == 0:
 # starting terminal manager by enlighten
 manager = get_manager()
 system('sudo clear')
-print(Image(path.join(_MEIPASS, 'Logo.png')))
+print(Image(path.join(hardening, 'Logo.png')))
 print(bold('Welcome to ubu20cis'))
 print('\n\nGive me a moment to calculate the prerequisites...\n\n')
 

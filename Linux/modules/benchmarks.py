@@ -4,9 +4,9 @@ from subprocess import Popen, PIPE
 from csv import writer
 from time import time
 from sys import exit
-from sys import _MEIPASS
 from os.path import join
 
+hardening = "/opt/hardening/Linux/"
 
 # dummy log_file variable
 log_file = ''
@@ -5127,7 +5127,7 @@ def _6_2_2_ubu():
 
 def _6_2_3_ubu():
     return_value = list()
-    script = join(_MEIPASS, 'scripts/ubu/6_2_3.sh')
+    script = join(hardening, 'scripts/ubu/6_2_3.sh')
     check('sudo cat ' + script + ' > ./group_passwd.sh')
     check('chmod +x ./group_passwd.sh')
     success, error = check('./group_passwd.sh')
@@ -5145,7 +5145,7 @@ def _6_2_3_ubu():
 
 def _6_2_4_ubu():
     return_value = list()
-    script = join(_MEIPASS, 'scripts/ubu/6_2_4.sh')
+    script = join(hardening, 'scripts/ubu/6_2_4.sh')
     check('sudo cat ' + script + ' > ./home_directories.sh')
     check('chmod +x ./home_directories.sh')
     success, error = check('./home_directories.sh')
@@ -5163,7 +5163,7 @@ def _6_2_4_ubu():
 
 def _6_2_5_ubu():
     return_value = list()
-    script = join(_MEIPASS, 'scripts/ubu/6_2_5.sh')
+    script = join(hardening, 'scripts/ubu/6_2_5.sh')
     check('sudo cat ' + script + ' > ./own_home_directory.sh')
     check('chmod +x ./own_home_directory.sh')
     success, error = check('./own_home_directory.sh')
@@ -5181,9 +5181,7 @@ def _6_2_5_ubu():
 
 def _6_2_6_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_6.sh')
+    script = join(hardening, 'scripts/ubu/6_2_6.sh')
     check('sudo cat ' + script + ' > ./home_directory_permissions.sh')
     check('chmod +x ./home_directory_permissions.sh')
     success, error = check('./home_directory_permissions.sh')
@@ -5201,9 +5199,7 @@ def _6_2_6_ubu():
 
 def _6_2_7_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_7.sh')
+    script = join(hardening, 'scripts/ubu/6_2_7.sh')
     check('sudo cat ' + script + ' > ./user_dot_file.sh')
     check('chmod +x ./user_dot_file.sh')
     success, error = check('./user_dot_file.sh')
@@ -5221,9 +5217,7 @@ def _6_2_7_ubu():
 
 def _6_2_8_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_8.sh')
+    script = join(hardening, 'scripts/ubu/6_2_8.sh')
     check('sudo cat ' + script + ' > ./user_netrc_file.sh')
     check('chmod +x ./user_netrc_file.sh')
     success, error = check('./user_netrc_file.sh')
@@ -5241,9 +5235,7 @@ def _6_2_8_ubu():
 
 def _6_2_9_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_9.sh')
+    script = join(hardening, 'scripts/ubu/6_2_9.sh')
     check('sudo cat ' + script + ' > ./user_forward_file.sh')
     check('chmod +x ./user_forward_file.sh')
     success, error = check('./user_forward_file.sh')
@@ -5261,9 +5253,7 @@ def _6_2_9_ubu():
 
 def _6_2_10_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_10.sh')
+    script = join(hardening, 'scripts/ubu/6_2_10.sh')
     check('sudo cat ' + script + ' > ./user_rhosts_file.sh')
     check('chmod +x ./user_rhosts_file.sh')
     success, error = check('./user_rhosts_file.sh')
@@ -5301,9 +5291,7 @@ def _6_2_11_ubu():
 
 def _6_2_12_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_12.sh')
+    script = join(hardening, 'scripts/ubu/6_2_12.sh')
     check('sudo cat ' + script + ' > ./root_path_integrity.sh')
     check('chmod +x ./root_path_integrity.sh')
     success, error = check('./root_path_integrity.sh')
@@ -5322,9 +5310,7 @@ def _6_2_12_ubu():
 
 def _6_2_13_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_13.sh')
+    script = join(hardening, 'scripts/ubu/6_2_13.sh')
     check('sudo cat ' + script + ' > ./duplicate_uid.sh')
     check('chmod +x ./duplicate_uid.sh')
     success, error = check('./duplicate_uid.sh')
@@ -5342,9 +5328,7 @@ def _6_2_13_ubu():
 
 def _6_2_14_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_14.sh')
+    script = join(hardening, 'scripts/ubu/6_2_14.sh')
     check('sudo cat ' + script + ' > ./duplicate_gid.sh')
     check('chmod +x ./duplicate_gid.sh')
     success, error = check('./duplicate_gid.sh')
@@ -5362,9 +5346,7 @@ def _6_2_14_ubu():
 
 def _6_2_15_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_15.sh')
+    script = join(hardening, 'scripts/ubu/6_2_15.sh')
     check('sudo cat ' + script + ' > ./duplicate_user_name.sh')
     check('chmod +x ./duplicate_user_name.sh')
     success, error = check('./duplicate_user_name.sh')
@@ -5382,9 +5364,7 @@ def _6_2_15_ubu():
 
 def _6_2_16_ubu():
     return_value = list()
-    from sys import _MEIPASS
-    from os.path import join
-    script = join(_MEIPASS, 'scripts/ubu/6_2_16.sh')
+    script = join(hardening, 'scripts/ubu/6_2_16.sh')
     check('sudo cat ' + script + ' > ./duplicate_group_name.sh')
     check('chmod +x ./duplicate_group_name.sh')
     success, error = check('./duplicate_group_name.sh')
