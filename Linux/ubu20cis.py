@@ -37,20 +37,20 @@ if options.exp != None:
 if options.report != None:
     generatePDF(options.report)
 
-# exit if SeBAz isn't run as root
+# exit if ubu20cis isn't run as root
 if not geteuid() == 0:
-    exit('\nPlease run SeBAz as root\n')
+    exit('\nPlease run ubu20cis as root\n')
 
 # starting terminal manager by enlighten
 manager = get_manager()
 system('sudo clear')
 print(Image(path.join(_MEIPASS, 'Logo.png')))
-print(bold('Welcome to SeBAz'))
+print(bold('Welcome to ubu20cis'))
 print('\n\nGive me a moment to calculate the prerequisites...\n\n')
 
-# writing test details and start time to .SeBAz.csv file
+# writing test details and start time to .ubu20cis.csv file
 file_path = path.dirname(path.abspath(__file__)) + '/' + \
-    str(options.org) + '-' + str(options.unique) + '.SeBAz.csv'
+    str(options.org) + '-' + str(options.unique) + '.ubu20cis.csv'
 with open(file_path, 'w', newline='') as csvfile:
     csvwriter = writer(csvfile, dialect='excel')
     csvwriter.writerow(['Recommendation Number', 'Message',
@@ -82,9 +82,9 @@ passd = manager.counter(total=length, unit='tests',
 faild = passd.add_subcounter('white')
 check = passd.add_subcounter('white')
 
-# SeBAz.log file
+# ubu20cis.log file
 log_file = path.dirname(path.abspath(__file__)) + '/' + \
-    str(options.org) + '-' + str(options.unique) + '_SeBAz_logs/'
+    str(options.org) + '-' + str(options.unique) + '_ubu20cis_logs/'
 system('mkdir ' + log_file)
 
 # calling the benchmark functions
@@ -98,7 +98,7 @@ with ThreadPoolExecutor() as executor:
 manager.stop()
 
 print('\n\nGenerating ' + str(options.org) +
-      '-' + str(options.unique) + '.SeBAz.csv')
+      '-' + str(options.unique) + '.ubu20cis.csv')
 with open(file_path, 'a', newline='') as csvfile:
     csvwriter = writer(csvfile, dialect='excel')
     for r in result:
@@ -122,7 +122,7 @@ else:
     duration += '{:.0f}'.format(end // 60 % 60) + \
         ' minutes and {:.3f} seconds'.format(end % 60)
 
-# writing test finish time to .SeBAz.csv file
+# writing test finish time to .ubu20cis.csv file
 with open(file_path, 'a', newline='') as csvfile:
     csvwriter = writer(csvfile, dialect='excel')
     csvwriter.writerows(['\n', ['---<DO NOT MODIFY ANYTHING BELOW>---'], '\n'])
@@ -145,7 +145,7 @@ with open(file_path, 'a', newline='') as csvfile:
 
 # Generating PDF
 print('\nGenerating ' + str(options.org) +
-      '-' + str(options.unique) + '.SeBAz.pdf')
+      '-' + str(options.unique) + '.ubu20cis.pdf')
 createPDF(file_path)
 print('Done.')
 
