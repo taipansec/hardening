@@ -24,21 +24,14 @@ def setInfo(pdf, ubu20cis_contents):
     pdf.setAuthor(ubu20cis_contents[-13][1])
     pdf.setCreator('ubu20cis')
     pdf.setProducer('ubu20cis')
-    subject = 'Result of CIS '
-    if ubu20cis_contents[-9][1] == 'ind':
-        subject += 'Distribution Independent Linux Benchmark v2.0.0'
-    if ubu20cis_contents[-9][1] == 'deb':
-        subject += 'Debian Linux 9 Benchmark v1.0.1'
-    if ubu20cis_contents[-9][1] == 'ubu':
-        subject += 'Ubuntu Linux 20.04 LTS v1.1.0'
+    subject = 'Result of CIS Ubuntu Linux 20.04 LTS v1.1.0'
     pdf.setSubject(subject)
     return subject
 
 
 def drawBorder(pdf):
     pdf.saveState()
-    pdf.setStrokeColorRGB(
-        colorPrimary[0]/256, colorPrimary[1]/256, colorPrimary[2]/256)
+    pdf.setStrokeColorRGB(colorPrimary[0]/256, colorPrimary[1]/256, colorPrimary[2]/256)
     pdf.setLineWidth(4)
     pdf.rect(A4[0]/12, A4[1]/17, A4[0]*10/12, A4[1]*15/17)
     pdf.restoreState()
@@ -47,15 +40,13 @@ def drawBorder(pdf):
 def makeTitle(pdf, ubu20cis_contents, subject):
     pdf.saveState()
     # border coloring
-    pdf.setFillColorRGB(colorPrimary[0]/256,
-                        colorPrimary[1]/256, colorPrimary[2]/256)
+    pdf.setFillColorRGB(colorPrimary[0]/256, colorPrimary[1]/256, colorPrimary[2]/256)
     pdf.rect(0, 0, A4[0]/12, A4[1], fill=1, stroke=0)
     pdf.rect(0, 0, A4[0], A4[1]/17, fill=1, stroke=0)
     pdf.rect(A4[0]*11/12, 0, A4[0]/12, A4[1], fill=1, stroke=0)
     pdf.rect(0, A4[1]*16/17, A4[0], A4[1]/17, fill=1, stroke=0)
     # title text
-    pdf.setFillColorRGB(
-        colorSecondary[0]/256, colorSecondary[1]/256, colorSecondary[2]/256)
+    pdf.setFillColorRGB(colorSecondary[0]/256, colorSecondary[1]/256, colorSecondary[2]/256)
     pdf.setFont('SF-Pro-Rounded-Heavy', 30)
     pdf.drawCentredString(A4[0]*4/10, A4[1]*18/50, ubu20cis_contents[-12][1])
     pdf.drawCentredString(A4[0]*6/10, A4[1]*20/50, ubu20cis_contents[-11][1])
@@ -68,14 +59,11 @@ def makeTitle(pdf, ubu20cis_contents, subject):
     pdf.saveState()
     score = ubu20cis_contents[-1][0].split('%')[0].split(' ')[-1]
     if int(score) > 75:
-        pdf.setFillColorRGB(
-            colorPass[0]/256, colorPass[1]/256, colorPass[2]/256)
+        pdf.setFillColorRGB(colorPass[0]/256, colorPass[1]/256, colorPass[2]/256)
     elif int(score) > 50:
-        pdf.setFillColorRGB(
-            colorWarn[0]/256, colorWarn[1]/256, colorWarn[2]/256)
+        pdf.setFillColorRGB(colorWarn[0]/256, colorWarn[1]/256, colorWarn[2]/256)
     else:
-        pdf.setFillColorRGB(
-            colorFail[0]/256, colorFail[1]/256, colorFail[2]/256)
+        pdf.setFillColorRGB(colorFail[0]/256, colorFail[1]/256, colorFail[2]/256)
     pdf.drawCentredString(A4[0]/2, A4[1]*29/50, ubu20cis_contents[-1][0])
     pdf.restoreState()
     # auditor name
@@ -108,26 +96,20 @@ def makePie(pdf, ubu20cis_contents, total):
     pc.slices.fontSize = 8
     pc.slices.labelRadius = 1.1
     pc.slices[0].popout = 10
-    pc.slices[0].fillColor = Color(
-        colorPass[0]/256, colorPass[1]/256, colorPass[2]/256, 1)
-    pc.slices[0].fontColor = Color(
-        colorPass[0]/256, colorPass[1]/256, colorPass[2]/256, 1)
+    pc.slices[0].fillColor = Color(colorPass[0]/256, colorPass[1]/256, colorPass[2]/256, 1)
+    pc.slices[0].fontColor = Color(colorPass[0]/256, colorPass[1]/256, colorPass[2]/256, 1)
     pc.slices[0].label_text = 'which is {:.3f}% of all tests\n{} of {} tests ({:.3f}%) Passed,'.format(
         (passd/total)*100, passd, (passd+faild+check), (passd/(passd+faild+check))*100)
-    pc.slices[1].fillColor = Color(
-        colorFail[0]/256, colorFail[1]/256, colorFail[2]/256, 1)
-    pc.slices[1].fontColor = Color(
-        colorFail[0]/256, colorFail[1]/256, colorFail[2]/256, 1)
+    pc.slices[1].fillColor = Color(colorFail[0]/256, colorFail[1]/256, colorFail[2]/256, 1)
+    pc.slices[1].fontColor = Color(colorFail[0]/256, colorFail[1]/256, colorFail[2]/256, 1)
     pc.slices[1].label_text = 'which is {:.3f}% of all tests\n{} of {} tests ({:.3f}%) Failed,'.format(
         (faild/total)*100, faild, (passd+faild+check), (faild/(passd+faild+check))*100)
     pc.slices[2].fillColor = darkgray
     pc.slices[2].fontColor = darkgray
     pc.slices[2].label_text = '{} of {} tests ({:.0f}%) Excluded'.format(
         excluded, total, (excluded/total)*100)
-    pc.slices[3].fillColor = Color(
-        colorWarn[0]/256, colorWarn[1]/256, colorWarn[2]/256, 1)
-    pc.slices[3].fontColor = Color(
-        colorWarn[0]/256, colorWarn[1]/256, colorWarn[2]/256, 1)
+    pc.slices[3].fillColor = Color(colorWarn[0]/256, colorWarn[1]/256, colorWarn[2]/256, 1)
+    pc.slices[3].fontColor = Color(colorWarn[0]/256, colorWarn[1]/256, colorWarn[2]/256, 1)
     pc.slices[3].label_text = 'which is {:.3f}% of all tests\n{} of {} tests ({:.3f}%) are to be Checked,'.format(
         (check/total)*100, check, (passd+faild+check), (check/(passd+faild+check))*100)
     d.add(pc)
