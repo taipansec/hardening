@@ -1,10 +1,4 @@
-function GetSidType {
-    param (
-        [Parameter(Mandatory=$true)][String]$sidtype,
-        [Parameter(Mandatory=$false)][String]$username,
-        [Parameter(Mandatory=$false)][String]$group
-    )
-
+function GetSidType([string] $sidtype, $username, $group) {
     if ($sidtype -eq "sid") {
         (Get-WmiObject -Class Win32_UserAccount -Filter "Name = '$username'").SID
     }
@@ -25,7 +19,13 @@ function Add-RightToGroup([string] $Group, $Right) {
     Write-Host "Getting current policy" -ForegroundColor Yellow `r
     secedit /export /cfg $TempConfigFile
 
-    $gid = GetSidType "gid" "$group"
+    $gid = GetSidType -sidtype "gid" -group "$group"
+    
+    $gids = (Select-String $TempConfigFile -Pattern "$Right").Line
+    Write-Host "Actual config" $gids
+    Write-Host "Removing..."
+    $gidList = "$($gids.Replace("*$gid", '').Replace("$Group", '').Replace(",,", ',').Replace("= ,", '= '))"
+    Write-Host "Applying new config..."
 
     $currentConfig = Get-Content -Encoding ascii $TempConfigFile
 
@@ -80,7 +80,7 @@ Function SetLocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrators' -Right 'SeInteractiveLogonRight'
+    Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight'
 }
 
 Function SetAccountPolicies {
