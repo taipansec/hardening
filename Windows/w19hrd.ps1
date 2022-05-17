@@ -10,7 +10,7 @@ function GetSidType([string] $sidtype, $username, $group) {
     }
 }
 
-function Add-RightToGroup([string] $Group, $Right) {
+function Add-RightToGroup([string] $Group, $Right, $Removable) {
     $tmp = New-TemporaryFile
 
     $TempConfigFile = "$tmp.inf"
@@ -19,17 +19,17 @@ function Add-RightToGroup([string] $Group, $Right) {
     Write-Host "Getting current policy" -ForegroundColor Yellow `r
     secedit /export /cfg $TempConfigFile
 
-    $gid = GetSidType -sidtype "gid" -group "$group"
-    
+    $gid = GetSidType -sidtype "gid" -group "$Group"
+    $gidr = GetSidType -sidtype "gid" -group "$Removable"
+
     $gids = (Select-String $TempConfigFile -Pattern "$Right").Line
     Write-Host "Actual config" $gids
-    Write-Host "Removing..."
-    $gidList = "$($gids.Replace("*$gid", '').Replace("$Group", '').Replace(",,", ',').Replace("= ,", '= '))"
     Write-Host "Applying new config..."
+    $rpl = $gids -replace '(= .*)', "= *$gid"
 
     $currentConfig = Get-Content -Encoding ascii $TempConfigFile
 
-    $newConfig = $currentConfig -replace "^$Right .+", "`$0,*$gid"
+    $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
 
     Set-Content -Path $TempConfigFile -Encoding ascii -Value $newConfig
 
