@@ -74,10 +74,7 @@ Function SetLocalPolicies {
     Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "add"
-
-    Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
+    Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "new"
 }
 
 Function SetAccountPolicies {
