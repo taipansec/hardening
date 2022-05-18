@@ -10,12 +10,12 @@ function GetSidType([string] $sidtype, $username, $group) {
     }
 }
 
+$tmp = New-TemporaryFile
+
+$TempConfigFile = "$tmp.inf"
+$TempDbFile = "$tmp.sdb"
+
 function Add-RightToGroup([string] $Group, $Right, $Options) {
-    $tmp = New-TemporaryFile
-
-    $TempConfigFile = "$tmp.inf"
-    $TempDbFile = "$tmp.sdb"
-
     Write-Host "Getting current policy" -ForegroundColor Yellow `r
     secedit /export /cfg $TempConfigFile
 
@@ -40,22 +40,12 @@ function Add-RightToGroup([string] $Group, $Right, $Options) {
             $rpl = "*$gid"
             $currentConfig[100] += "`r`n$Right = "+"*$gid"
             $newConfig = $currentConfig
+            Write-Host "New config to be written`r`n" $newConfig
         }
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
     }
 
     Set-Content -Path $TempConfigFile -Value $newConfig
-
-    Write-Host "Importing new policy on temp database" -ForegroundColor White
-    secedit /import /db $TempDbFile /overwrite /cfg $TempConfigFile /quiet
-
-    Write-Host "Applying new policy to machine" -ForegroundColor White
-    secedit /configure /db $TempDbFile /cfg $TempConfigFile
-
-    Write-Host "Updating policy" -ForegroundColor White `r
-    gpupdate /force
-
-    Remove-Item $tmp* -ea 0
 }
 
 function Add-RightToUser([string] $Username, $Right) {
@@ -77,6 +67,19 @@ function Add-RightToUser([string] $Username, $Right) {
 
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /cfg $TempConfigFile /db $TempDbFile
+
+    Write-Host "Applying new policy to machine" -ForegroundColor White
+    secedit /configure /db $TempDbFile /cfg $TempConfigFile
+
+    Write-Host "Updating policy" -ForegroundColor White `r
+    gpupdate /force
+
+    Remove-Item $tmp* -ea 0
+}
+
+function Write-Conf {
+    Write-Host "Importing new policy on temp database" -ForegroundColor White
+    secedit /import /db $TempDbFile /overwrite /cfg $TempConfigFile /quiet
 
     Write-Host "Applying new policy to machine" -ForegroundColor White
     secedit /configure /db $TempDbFile /cfg $TempConfigFile
@@ -125,3 +128,4 @@ $identity = $args[0]
 
 SetAccountPolicies $identity
 SetLocalPolicies
+Write-Conf
