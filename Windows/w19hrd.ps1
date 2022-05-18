@@ -10,7 +10,7 @@ function GetSidType([string] $sidtype, $username, $group) {
     }
 }
 
-function Add-RightToGroup([string] $Group, $Right, $Removable) {
+function Add-RightToGroup([string] $Group, $Right, $Options) {
     $tmp = New-TemporaryFile
 
     $TempConfigFile = "$tmp.inf"
@@ -24,11 +24,25 @@ function Add-RightToGroup([string] $Group, $Right, $Removable) {
     $gids = (Select-String $TempConfigFile -Pattern "$Right").Line
     Write-Host "Actual config" $gids
     Write-Host "Applying new config..."
-    $rpl = $gids -replace '(= .*)', "= *$gid"
 
     $currentConfig = Get-Content -Encoding ascii $TempConfigFile
 
-    $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+    switch ($Options) {
+        "replace" {
+            $rpl = $gids -replace '(= .*)', "= *$gid"
+            $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+        }
+        "add" {
+            $rpl = $gids+",*$gid"
+            $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+        }
+        "new" {
+            $rpl = "*$gid"
+            $currentConfig[100] += "$Right = "+"*$gid"
+            $newConfig = $currentConfig
+        }
+        Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
+    }
 
     Set-Content -Path $TempConfigFile -Value $newConfig
 
@@ -78,8 +92,17 @@ Function SetLocalPolicies {
     Write-Host "LOCAL POLICIES CHAPTER - User Rights Assignement" -ForegroundColor Yellow
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
-    Write-Host "2.2.7 (L1) Ensure 'Allow log on locally' is set to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight'
+    Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
+    Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight' -Options "replace"
+
+    Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
+    Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
+    Add-RightToGroup -Group 'Invités' -Right 'SeBackupPrivilege' -Options "add"
+
+    Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
+    Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
 }
 
 Function SetAccountPolicies {
