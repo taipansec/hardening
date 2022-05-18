@@ -20,7 +20,6 @@ function Add-RightToGroup([string] $Group, $Right, $Removable) {
     secedit /export /cfg $TempConfigFile
 
     $gid = GetSidType -sidtype "gid" -group "$Group"
-    $gidr = GetSidType -sidtype "gid" -group "$Removable"
 
     $gids = (Select-String $TempConfigFile -Pattern "$Right").Line
     Write-Host "Actual config" $gids
@@ -31,10 +30,10 @@ function Add-RightToGroup([string] $Group, $Right, $Removable) {
 
     $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
 
-    Set-Content -Path $TempConfigFile -Encoding ascii -Value $newConfig
+    Set-Content -Path $TempConfigFile -Value $newConfig
 
     Write-Host "Importing new policy on temp database" -ForegroundColor White
-    secedit /import /cfg $TempConfigFile /db $TempDbFile
+    secedit /import /db $TempDbFile /overwrite /cfg $TempConfigFile /quiet
 
     Write-Host "Applying new policy to machine" -ForegroundColor White
     secedit /configure /db $TempDbFile /cfg $TempConfigFile
