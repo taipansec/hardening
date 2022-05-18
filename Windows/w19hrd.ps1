@@ -38,7 +38,7 @@ function Add-RightToGroup([string] $Group, $Right, $Options) {
         }
         "new" {
             $rpl = "*$gid"
-            $currentConfig[100] += "$Right = "+"*$gid"
+            $currentConfig[100] += "`r`n$Right = "+"*$gid"
             $newConfig = $currentConfig
         }
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
@@ -99,7 +99,7 @@ Function SetLocalPolicies {
     Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeBackupPrivilege' -Options "add"
+    Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "add"
 
     Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
     Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
