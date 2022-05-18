@@ -10,12 +10,12 @@ function GetSidType([string] $sidtype, $username, $group) {
     }
 }
 
-$tmp = New-TemporaryFile
-
-$TempConfigFile = "$tmp.inf"
-$TempDbFile = "$tmp.sdb"
-
 function Add-RightToGroup([string] $Group, $Right, $Options) {
+    $tmp = New-TemporaryFile
+
+    $TempConfigFile = "$tmp.inf"
+    $TempDbFile = "$tmp.sdb"
+
     Write-Host "Getting current policy" -ForegroundColor Yellow `r
     secedit /export /cfg $TempConfigFile
 
@@ -40,12 +40,13 @@ function Add-RightToGroup([string] $Group, $Right, $Options) {
             $rpl = "*$gid"
             $currentConfig[100] += "`r`n$Right = "+"*$gid"
             $newConfig = $currentConfig
-            Write-Host "New config to be written`r`n" $newConfig
         }
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
     }
 
     Set-Content -Path $TempConfigFile -Value $newConfig
+
+    return $TempConfigFile, $TempDbFile
 }
 
 function Add-RightToUser([string] $Username, $Right) {
@@ -77,17 +78,16 @@ function Add-RightToUser([string] $Username, $Right) {
     Remove-Item $tmp* -ea 0
 }
 
-function Write-Conf {
+function Up-NewConf {
+    $cf, $db = SetLocalPolicies
     Write-Host "Importing new policy on temp database" -ForegroundColor White
-    secedit /import /db $TempDbFile /overwrite /cfg $TempConfigFile /quiet
+    secedit /import /db $db /overwrite /cfg $cf /quiet
 
     Write-Host "Applying new policy to machine" -ForegroundColor White
-    secedit /configure /db $TempDbFile /cfg $TempConfigFile
+    secedit /configure /db $db /cfg $cf
 
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
-
-    Remove-Item $tmp* -ea 0
 }
 
 Function SetLocalPolicies {
@@ -96,16 +96,18 @@ Function SetLocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight' -Options "replace"
+    $ConfFile, $DBFile = Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight' -Options "replace"
 
     Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
+    $ConfFile, $DBFile = Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "add"
+    $ConfFile, $DBFile = Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "add"
 
     Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
+    $ConfFile, $DBFile = Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
+
+    return $ConfFile, $DBFile
 }
 
 Function SetAccountPolicies {
@@ -128,4 +130,4 @@ $identity = $args[0]
 
 SetAccountPolicies $identity
 SetLocalPolicies
-Write-Conf
+Up-NewConf
