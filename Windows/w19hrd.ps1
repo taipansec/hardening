@@ -86,10 +86,10 @@ function Add-RightToUser([string] $Username, $Right) {
 function Up-NewConf([string] $rmtmp) {
     $cf, $db = SetLocalPolicies
     Write-Host "Importing new policy on temp database" -ForegroundColor White
-    secedit /import /db $db /overwrite /cfg $cf /quiet
+    secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
     Write-Host "Applying new policy to machine" -ForegroundColor White
-    secedit /configure /db $db /cfg $cf
+    secedit /configure /db $Global:DBFile /cfg $Global:ConfFile
 
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
@@ -103,18 +103,16 @@ Function SetLocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
-    $ConfFile, $DBFile = Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight' -Options "replace"
+    Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight' -Options "replace"
 
     Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
-    $ConfFile, $DBFile = Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
+    Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    $ConfFile, $DBFile = Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "add"
+    Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "add"
 
     Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
-    $ConfFile, $DBFile = Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
-
-    return $ConfFile, $DBFile
+    Add-RightToGroup -Group 'Invités' -Right 'SeDenyServiceLogonRight' -Options "new"
 }
 
 Function SetAccountPolicies {
