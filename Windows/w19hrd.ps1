@@ -1,6 +1,9 @@
-$Global:ConfFile
-$Global:DBFile
-$Global:newConfig
+$p = Get-Location
+$tmp = $p.ToString()
+
+$Global:ConfFile = "$tmp\temp.inf"
+$Global:DBFile = "$tmp\temp.sdb"
+$Global:newConfig = $null
 
 function GetSidType([string] $sidtype, [string] $username, [string] $group) {
     if ($sidtype -eq "sid") {
@@ -15,22 +18,16 @@ function GetSidType([string] $sidtype, [string] $username, [string] $group) {
 }
 
 function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
-    $p = Get-Location
-    $tmp = $p.ToString()
-
-    $TempConfigFile = "$tmp\temp.inf"
-    $TempDbFile = "$tmp\temp.sdb"
-
     Write-Host "Getting current policy" -ForegroundColor Yellow `r
-    secedit /export /cfg $TempConfigFile
+    secedit /export /cfg $Global:ConfFile
 
     $gid = GetSidType -sidtype "gid" -group "$Group"
 
-    $gids = (Select-String $TempConfigFile -Pattern "$Right").Line
+    $gids = (Select-String $Global:ConfFile -Pattern "$Right").Line
     Write-Host "Actual config" $gids
-    Write-Host "Applying new config..."
+    Write-Host "Applying new config..." `r
 
-    $currentConfig = Get-Content -Encoding ascii $TempConfigFile
+    $currentConfig = Get-Content -Encoding ascii $Global:ConfFile
 
     switch ($Options) {
         "replace" {
@@ -49,10 +46,7 @@ function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
     }
 
-    Set-Content -Path $TempConfigFile -Value $Global:newConfig
-
-    $Global:ConfFile = $TempConfigFile
-    $Global:DBFile = $TempDbFile
+    Set-Content -Path $Global:ConfFile -Value $Global:newConfig
 }
 
 function Add-RightToUser([string] $Username, $Right) {
@@ -85,7 +79,6 @@ function Add-RightToUser([string] $Username, $Right) {
 }
 
 function Up-NewConf([string] $rmtmp) {
-    $cf, $db = SetLocalPolicies
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
