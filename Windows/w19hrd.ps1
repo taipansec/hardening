@@ -1,4 +1,7 @@
-function GetSidType([string] $sidtype, $username, $group) {
+$Global:ConfFile
+$Global:DBFile
+
+function GetSidType([string] $sidtype, [string] $username, [string] $group) {
     if ($sidtype -eq "sid") {
         (Get-WmiObject -Class Win32_UserAccount -Filter "Name = '$username'").SID
     }
@@ -10,11 +13,12 @@ function GetSidType([string] $sidtype, $username, $group) {
     }
 }
 
-function Add-RightToGroup([string] $Group, $Right, $Options) {
-    $tmp = New-TemporaryFile
+function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
+    $p = Get-Location
+    $tmp = $p.ToString()
 
-    $TempConfigFile = "$tmp.inf"
-    $TempDbFile = "$tmp.sdb"
+    $TempConfigFile = "$tmp\temp.inf"
+    $TempDbFile = "$tmp\temp.sdb"
 
     Write-Host "Getting current policy" -ForegroundColor Yellow `r
     secedit /export /cfg $TempConfigFile
@@ -46,7 +50,8 @@ function Add-RightToGroup([string] $Group, $Right, $Options) {
 
     Set-Content -Path $TempConfigFile -Value $newConfig
 
-    return $TempConfigFile, $TempDbFile
+    $Global:ConfFile = $TempConfigFile
+    $Global:DBFile = $TempDbFile
 }
 
 function Add-RightToUser([string] $Username, $Right) {
@@ -78,7 +83,7 @@ function Add-RightToUser([string] $Username, $Right) {
     Remove-Item $tmp* -ea 0
 }
 
-function Up-NewConf {
+function Up-NewConf([string] $rmtmp) {
     $cf, $db = SetLocalPolicies
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $db /overwrite /cfg $cf /quiet
@@ -88,6 +93,8 @@ function Up-NewConf {
 
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
+
+    Remove-Item $rmtmp -ea 0
 }
 
 Function SetLocalPolicies {
@@ -127,7 +134,8 @@ Function SetAccountPolicies {
 }
 
 $identity = $args[0]
+$removable = $args[1]
 
 SetAccountPolicies $identity
 SetLocalPolicies
-Up-NewConf
+Up-NewConf -rmtmp $removable
