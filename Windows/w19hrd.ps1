@@ -17,10 +17,15 @@ function GetSidType([string] $sidtype, [string] $username, [string] $group) {
     }
 }
 
-function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
-    Write-Host "Getting current policy" -ForegroundColor Yellow `r
+function GetSec() {
     secedit /export /cfg $Global:ConfFile
+}
 
+function SetConf() {
+    Set-Content -Path $Global:ConfFile -Value $Global:newConfig
+}
+
+function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
     $gid = GetSidType -sidtype "gid" -group "$Group"
 
     $gids = (Select-String $Global:ConfFile -Pattern "$Right").Line
@@ -33,23 +38,24 @@ function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
         "replace" {
             $rpl = $gids -replace '(= .*)', "= *$gid"
             $Global:newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+            SetConf
         }
         "add" {
             $rpl = $gids+",*$gid"
             $Global:newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+            SetConf
         }
         "new" {
             $rpl = "*$gid"
             $currentConfig[100] += "`r`n$Right = "+"*$gid"
             $Global:newConfig = $currentConfig
+            SetConf
         }
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
     }
 }
 
 function Up-NewConf([string] $rmtmp) {
-    Set-Content -Path $Global:ConfFile -Value $Global:newConfig
-
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
@@ -96,6 +102,8 @@ Function SetAccountPolicies {
 $identity = $args[0]
 $removable = $args[1]
 
+Write-Host "Getting current policy" -ForegroundColor Yellow `r
+GetSec
 SetAccountPolicies $identity
 SetLocalPolicies
 Up-NewConf -rmtmp $removable
