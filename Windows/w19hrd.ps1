@@ -1,7 +1,7 @@
 $p = Get-Location
 $tmp = $p.ToString()
 
-$Global:ConfFile = "$tmp\temp.inf"
+$Global:ConfFile = "$tmp\temp.txt"
 $Global:DBFile = "$tmp\temp.sdb"
 $Global:newConfig = $null
 
@@ -27,7 +27,7 @@ function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
     Write-Host "Actual config" $gids
     Write-Host "Applying new config..." `r
 
-    $currentConfig = Get-Content -Encoding ascii $Global:ConfFile
+    $currentConfig = Get-Content $Global:ConfFile
 
     switch ($Options) {
         "replace" {
@@ -45,40 +45,11 @@ function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
         }
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
     }
-
-    Set-Content -Path $Global:ConfFile -Value $Global:newConfig
-}
-
-function Add-RightToUser([string] $Username, $Right) {
-    $tmp = New-TemporaryFile
-
-    $TempConfigFile = "$tmp.inf"
-    $TempDbFile = "$tmp.sdb"
-
-    Write-Host "Getting current policy" -ForegroundColor Yellow `r
-    secedit /export /cfg $TempConfigFile
-
-    $sid = GetSidType "sid" "$username"
-
-    $currentConfig = Get-Content -Encoding ascii $TempConfigFile
-
-    $newConfig = $currentConfig -replace "^$Right .+", "`$0,*$sid"
-
-    Set-Content -Path $TempConfigFile -Encoding ascii -Value $newConfig
-
-    Write-Host "Importing new policy on temp database" -ForegroundColor White
-    secedit /import /cfg $TempConfigFile /db $TempDbFile
-
-    Write-Host "Applying new policy to machine" -ForegroundColor White
-    secedit /configure /db $TempDbFile /cfg $TempConfigFile
-
-    Write-Host "Updating policy" -ForegroundColor White `r
-    gpupdate /force
-
-    Remove-Item $tmp* -ea 0
 }
 
 function Up-NewConf([string] $rmtmp) {
+    Set-Content -Path $Global:ConfFile -Value $Global:newConfig
+
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
