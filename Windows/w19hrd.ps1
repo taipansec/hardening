@@ -1,5 +1,6 @@
 $Global:ConfFile
 $Global:DBFile
+$Global:newConfig
 
 function GetSidType([string] $sidtype, [string] $username, [string] $group) {
     if ($sidtype -eq "sid") {
@@ -34,21 +35,21 @@ function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
     switch ($Options) {
         "replace" {
             $rpl = $gids -replace '(= .*)', "= *$gid"
-            $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+            $Global:newConfig = $currentConfig -replace "^$Right .+", "$rpl"
         }
         "add" {
             $rpl = $gids+",*$gid"
-            $newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+            $Global:newConfig = $currentConfig -replace "^$Right .+", "$rpl"
         }
         "new" {
             $rpl = "*$gid"
             $currentConfig[100] += "`r`n$Right = "+"*$gid"
-            $newConfig = $currentConfig
+            $Global:newConfig = $currentConfig
         }
         Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
     }
 
-    Set-Content -Path $TempConfigFile -Value $newConfig
+    Set-Content -Path $TempConfigFile -Value $Global:newConfig
 
     $Global:ConfFile = $TempConfigFile
     $Global:DBFile = $TempDbFile
