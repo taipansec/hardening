@@ -28,8 +28,11 @@ function SetConf() {
 function Set-Policy([string] $Group, [string] $Key, [string] $Options) {
     $gid = GetSidType -sidtype "gid" -group "$Group"
 
-    $gids = (Select-String $Global:ConfFile -Pattern "$Key").Line
-    Write-Host "Actual config" $gids
+    if ($Group) {
+        $gids = (Select-String $Global:ConfFile -Pattern "$Key").Line
+        Write-Host "Actual config" $gids
+    }
+
     Write-Host "Applying new config..." `r
 
     $currentConfig = Get-Content $Global:ConfFile
@@ -52,13 +55,16 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options) {
             SetConf
         }
         "newreg" {
-            ($currentConfig.Text) | 
-                Foreach-Object {
-                    if ($_ -match "[Registry Values]") {
-                        $_ -replace "[Registry Values]", "test"
-                        $Global:newConfig = $currentConfig
-                    }
-            } | SetConf
+            $Pattern = "[Registry Values]"
+            [String[]] $FileModified = @()
+            Foreach ($Line in $currentConfig) {
+                $FileModified += $Line
+                if ( $Line.Trim() -eq $Pattern ) {
+                    $FileModified += "TESTETSETSESTETSETESTSETEST"
+                }
+            }
+            $Global:newConfig = $FileModified
+            SetConf
         }
         Default { Write-Host "Wrong Option for Set-Policy" -ForegroundColor Red; Break}
     }
