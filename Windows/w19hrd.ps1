@@ -157,10 +157,10 @@ Function SetLocalPolicies {
     Set-Policy -Key "ForceLogoffWhenHourExpire =.*" -Options "replreg" -Pattern "ForceLogoffWhenHourExpire = 1"
     
     Write-Host "Setting 'Network security: Minimum session security for NTLM SSP based (including secure RPC) Clients' to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinClientSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinClientSec=4,537395200"
+    Set-Policy -Key "MACHINE.*(\\System\\CurrentControlSet\\Control\\Lsa\\MSV1_0\\NTLMMinClientSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinClientSec=4,537395200"
 
     Write-Host "Setting 'Network security: Minimum session security for NTLM SSP based (including secure RPC) Servers' to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
+    Set-Policy -Key "MACHINE.*(\\System\\CurrentControlSet\\Control\\Lsa\MSV1_0\\NTLMMinServerSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
 
     Write-Host "Setting 'User Account Control: Admin Approval Mode for the Built-in Administrator account' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
