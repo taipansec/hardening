@@ -25,7 +25,7 @@ function SetConf() {
     Set-Content -Path $Global:ConfFile -Value $Global:newConfig
 }
 
-function Set-Policy([string] $Group, [string] $Key, [string] $Options) {
+function Set-Policy([string] $Group, [string] $Key, [string] $Options, [string] $Pattern) {
     $gid = GetSidType -sidtype "gid" -group "$Group"
 
     if ($Group) {
@@ -50,20 +50,34 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options) {
         }
         "new" {
             $rpl = "*$gid"
-            $currentConfig[100] += "`r`n$Key = "+"*$gid"
-            $Global:newConfig = $currentConfig
+            [String[]] $ConfModified = @()
+            Foreach ($Line in $currentConfig) {
+                $ConfModified += $Line
+                if ( $Line.Trim() -match $Pattern ) {
+                    $ConfModified += "$Key= "+"*$gid"
+                }
+            }
+            $Global:newConfig = $ConfModified
             SetConf
         }
         "newreg" {
-            $Pattern = "[Registry Values]"
-            [String[]] $FileModified = @()
+            $first = $true
+            [String[]] $ConfModified = @()
             Foreach ($Line in $currentConfig) {
-                $FileModified += $Line
-                if ( $Line.Trim() -eq $Pattern ) {
-                    $FileModified += "TESTETSETSESTETSETESTSETEST"
+                $ConfModified += $Line
+                if ( $Line.Trim() -match $Pattern ) {
+                    if ($first) {
+                        $ConfModified += $Key
+                        $first = $false
+                    }
                 }
             }
-            $Global:newConfig = $FileModified
+            $Global:newConfig = $ConfModified
+            SetConf
+        }
+        "replreg" {
+            $rpl = $Key -replace '(=.*)', $Pattern
+            $Global:newConfig = $currentConfig -replace "^$Key .*", "$Key"+"$rpl"
             SetConf
         }
         Default { Write-Host "Wrong Option for Set-Policy" -ForegroundColor Red; Break}
@@ -95,10 +109,10 @@ Function SetLocalPolicies {
     Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
+    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new" -Pattern '[Privilege Rights]'
 
     Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
+    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new" -Pattern '[Privilege Rights]'
 
     Write-Host "Setting 'Restore files and directories' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeRestorePrivilege' -Options "replace"
@@ -107,7 +121,10 @@ Function SetLocalPolicies {
     Set-Policy -Group 'Administrateurs' -Key 'SeShutdownPrivilege' -Options "replace"
 
     Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
-    Set-Policy -Options "newreg"
+    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern 'MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\'
+
+    Write-Host "Setting 'Interactive logon: Don't display last signed-in' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\dontdisplaylastusername=" -Options "replreg" -Pattern '=4,1'
 }
 
 Function SetAccountPolicies {
