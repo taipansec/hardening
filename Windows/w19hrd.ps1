@@ -25,10 +25,10 @@ function SetConf() {
     Set-Content -Path $Global:ConfFile -Value $Global:newConfig
 }
 
-function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
+function Set-Policy([string] $Group, [string] $Key, [string] $Options) {
     $gid = GetSidType -sidtype "gid" -group "$Group"
 
-    $gids = (Select-String $Global:ConfFile -Pattern "$Right").Line
+    $gids = (Select-String $Global:ConfFile -Pattern "$Key").Line
     Write-Host "Actual config" $gids
     Write-Host "Applying new config..." `r
 
@@ -37,21 +37,30 @@ function Add-RightToGroup([string] $Group, [string] $Right, [string] $Options) {
     switch ($Options) {
         "replace" {
             $rpl = $gids -replace '(= .*)', "= *$gid"
-            $Global:newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+            $Global:newConfig = $currentConfig -replace "^$Key .+", "$rpl"
             SetConf
         }
         "add" {
             $rpl = $gids+",*$gid"
-            $Global:newConfig = $currentConfig -replace "^$Right .+", "$rpl"
+            $Global:newConfig = $currentConfig -replace "^$Key .+", "$rpl"
             SetConf
         }
         "new" {
             $rpl = "*$gid"
-            $currentConfig[100] += "`r`n$Right = "+"*$gid"
+            $currentConfig[100] += "`r`n$Key = "+"*$gid"
             $Global:newConfig = $currentConfig
             SetConf
         }
-        Default { Write-Host "Wrong Option for Add-RightToGroup" -ForegroundColor Red; Break}
+        "newreg" {
+            ($currentConfig.Text) | 
+                Foreach-Object {
+                    if ($_ -match "[Registry Values]") {
+                        $_ -replace "[Registry Values]", "test"
+                        $Global:newConfig = $currentConfig
+                    }
+            } | SetConf
+        }
+        Default { Write-Host "Wrong Option for Set-Policy" -ForegroundColor Red; Break}
     }
 }
 
@@ -74,22 +83,25 @@ Function SetLocalPolicies {
     Write-Host "################################################" -ForegroundColor Yellow `r`n
 
     Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeInteractiveLogonRight' -Options "replace"
+    Set-Policy -Group 'Administrateurs' -Key 'SeInteractiveLogonRight' -Options "replace"
 
     Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeBackupPrivilege' -Options "replace"
+    Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeDenyBatchLogonRight' -Options "new"
+    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
 
     Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Invités' -Right 'SeDenyInteractiveLogonRight' -Options "new"
+    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
 
     Write-Host "Setting 'Restore files and directories' to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeRestorePrivilege' -Options "replace"
+    Set-Policy -Group 'Administrateurs' -Key 'SeRestorePrivilege' -Options "replace"
 
     Write-Host "Setting 'Shut down the system' to 'Administrators'" -ForegroundColor Green
-    Add-RightToGroup -Group 'Administrateurs' -Right 'SeShutdownPrivilege' -Options "replace"
+    Set-Policy -Group 'Administrateurs' -Key 'SeShutdownPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
+    Set-Policy -Options "newreg"
 }
 
 Function SetAccountPolicies {
