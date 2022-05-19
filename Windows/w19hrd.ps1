@@ -151,7 +151,7 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Network security: Configure encryption types allowed for Kerberos' to 'AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types'" -ForegroundColor Green
     New-Item –Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\" –Name Kerberos
     New-Item –Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\" –Name Parameters
-    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\SupportedEncryptionTypes=4,16" -Options "newreg" -Pattern '^MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\)'
+    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\SupportedEncryptionTypes=4,2147483632" -Options "newreg" -Pattern '^MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\)'
 
     Write-Host "Setting 'Network security: Force logoff when logon hours expire' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "ForceLogoffWhenHourExpire =.*" -Options "replreg" -Pattern "ForceLogoffWhenHourExpire = 1"
@@ -160,7 +160,7 @@ Function SetLocalPolicies {
     Set-Policy -Key "MACHINE.*(\\System\\CurrentControlSet\\Control\\Lsa\\MSV1_0\\NTLMMinClientSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinClientSec=4,537395200"
 
     Write-Host "Setting 'Network security: Minimum session security for NTLM SSP based (including secure RPC) Servers' to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\System\\CurrentControlSet\\Control\\Lsa\MSV1_0\\NTLMMinServerSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
+    Set-Policy -Key "MACHINE.*(\\System\\CurrentControlSet\\Control\\Lsa\\MSV1_0\\NTLMMinServerSec=).*" -Options "replreg" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
 
     Write-Host "Setting 'User Account Control: Admin Approval Mode for the Built-in Administrator account' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
