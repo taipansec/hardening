@@ -50,14 +50,8 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options, [string] 
         }
         "new" {
             $rpl = "*$gid"
-            [String[]] $ConfModified = @()
-            Foreach ($Line in $currentConfig) {
-                $ConfModified += $Line
-                if ( $Line.Trim() -match $Pattern ) {
-                    $ConfModified += "$Key= "+"*$gid"
-                }
-            }
-            $Global:newConfig = $ConfModified
+            $currentConfig[120] += "`r`n$Key = "+"*$gid"
+            $Global:newConfig = $currentConfig
             SetConf
         }
         "newreg" {
@@ -109,10 +103,10 @@ Function SetLocalPolicies {
     Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
 
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new" -Pattern '[Privilege Rights]'
+    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
 
     Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new" -Pattern '[Privilege Rights]'
+    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
 
     Write-Host "Setting 'Restore files and directories' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeRestorePrivilege' -Options "replace"
