@@ -104,6 +104,9 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
     Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
 
+    Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
+    Set-Policy -Group 'Invités' -Key 'SeDenyServiceLogonRight' -Options "new"
+
     Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
     Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
 
@@ -116,7 +119,7 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
 
-    Write-Host "Setting 'Interactive logon: Don't display last signed-in' to 'Enabled'" -ForegroundColor Green
+    Write-Host "Setting 'Interactive logon: Do not display last user name' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\DontDisplayLastUsername=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUsername=4,1"
 
     Write-Host "Setting 'Interactive logon: Machine inactivity limit' to '900 or fewer second(s), but not 0'" -ForegroundColor Green
@@ -141,8 +144,8 @@ Function SetLocalPolicies {
     Set-Policy -Key "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\AllowNullSessionFallback=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\MSV1_0\\)'
 
     Write-Host "Setting 'Network Security: Allow PKU2U authentication requests to this computer to use online identities' to 'Disabled'" -ForegroundColor Green
-    $keyexist = Test-Path "HKLM:\System\CurrentControlSet\Control\Lsa\PKU2U"
-    if (!$keyexist) {
+    $pku2ukey = Test-Path "HKLM:\System\CurrentControlSet\Control\Lsa\PKU2U"
+    if (!$pku2ukey) {
         New-Item –Path "HKLM:\System\CurrentControlSet\Control\Lsa\" –Name PKU2U
     }
     Set-Policy -Key "MACHINE\System\CurrentControlSet\Control\Lsa\PKU2U\AllowOnlineID=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\MSV1_0\\)'
@@ -177,10 +180,6 @@ Function SetLocalPolicies {
     Write-Host "Setting 'User Account Control: Run all administrators in Admin Approval Mode' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\EnableLUA=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA=4,1"
 
-    Write-Host "Setting 'User Account Control: Switch to the secure desktop when prompting for elevation' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\PromptOnSecureDesktop=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\PromptOnSecureDesktop=4,1"
-
-
     Write-Host "##################" -ForegroundColor Yellow `r
     Write-Host "AD MEMBERS CHAPTER" -ForegroundColor Yellow
     Write-Host "##################" -ForegroundColor Yellow `r`n
@@ -205,16 +204,16 @@ Function SetLocalPolicies {
     Set-Policy -Key "EnableAdminAccount =.*" -Options "replaceitem" -Pattern "EnableAdminAccount = 0"
 
     Write-Host "Setting 'Interactive logon: Require Domain Controller Authentication to unlock workstation' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Winlogon\\ForceUnlockLogon=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ForceUnlockLogon=4,1"
+    Set-Policy -Key "MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\ForceUnlockLogon=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ForceUnlockLogon=4,1"
 
     Write-Host "Setting 'Microsoft network server: Server SPN target name validation level' to 'Accept if provided by client' or higher" -ForegroundColor Green
     Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\SmbServerNameHardeningLevel=4,2" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\)'
 
     Write-Host "Setting 'Network access: Do not allow anonymous enumeration of SAM accounts and shares' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\Control\\Lsa\\RestrictAnonymous=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymous=4,1"
+    Set-Policy -Key "MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\RestrictAnonymous=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymous=4,1"
 
     Write-Host "Setting 'Network access: Restrict clients allowed to make remote calls to SAM' to 'Administrators: Remote Access: Allow'" -ForegroundColor Green
-    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\RestrictRemoteSAM=1,O:BAG:BAD:(A;;RC;;;BA)" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\)'
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\RestrictRemoteSAM=1,O:BAG:BAD:(A;;RC;;;BA)" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
 }
 
 Function SetAccountPolicies {
