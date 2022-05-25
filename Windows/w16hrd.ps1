@@ -232,11 +232,11 @@ Function SetAccountPolicies {
     Set-ADDefaultDomainPasswordPolicy -Identity $identity -MinPasswordLength 14
 }
 
-$identity = $args[0]
+# $identity = $args[0]
 $removable = $args[1]
 
 Write-Host "Getting current policy" -ForegroundColor Yellow `r
 GetSec
-SetAccountPolicies $identity
+# SetAccountPolicies $identity
 SetLocalPolicies
 Up-NewConf -rmtmp $removable
