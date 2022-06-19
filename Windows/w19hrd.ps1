@@ -233,11 +233,28 @@ Function SetAccountPolicies {
     Set-ADDefaultDomainPasswordPolicy -Identity $identity -MinPasswordLength 14
 }
 
-# $identity = $args[0]
-$removable = $args[1]
+Function Harden {
+    $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
+        if ($shouldctn -eq "y") {
+            Write-Host "Getting current policy" -ForegroundColor Yellow `r
+            GetSec
+            # $identity = Read-Host "Specify the domain identity:"
+            # SetAccountPolicies $identity
+            SetLocalPolicies
+            $currentdir = Get-Location
+            $removable = [string]$currentdir + "\temp.*"
+            Up-NewConf -rmtmp $removable
+        } else { Write-Host "Leaving..."; exit 0}
+}
 
-Write-Host "Getting current policy" -ForegroundColor Yellow `r
-GetSec
-# SetAccountPolicies $identity
-SetLocalPolicies
-Up-NewConf -rmtmp $removable
+$backup = Read-Host "Should we backup the current configuration? (y/n)"
+
+if ($backup -eq "y") {
+    SecEdit.exe /export /cfg actualconf.txt
+    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+    if ($exist -eq True) {
+        Harden
+    } else { Write-Host "Failed to backup actual config... Leaving"; exit 1}
+} elseif ($backup -eq "n") {
+    Harden
+} else { Write-Host "Wrong answer... Leaving"; exit 1}
