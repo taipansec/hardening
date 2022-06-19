@@ -244,17 +244,17 @@ Function Harden {
             $currentdir = Get-Location
             $removable = [string]$currentdir + "\temp.*"
             Up-NewConf -rmtmp $removable
-        } else { Write-Host "Leaving..."; exit 0}
+        } else { Write-Host "Leaving..."; exit 0 }
 }
 
 $backup = Read-Host "Should we backup the current configuration? (y/n)"
 
 if ($backup -eq "y") {
-    SecEdit.exe /export /cfg actualconf.txt
+    secedit /export /cfg actualconf.txt
     $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-    if ($exist -eq True) {
+    if ($exist -eq $true) {
         Harden
-    } else { Write-Host "Failed to backup actual config... Leaving"; exit 1}
+    } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
 } elseif ($backup -eq "n") {
     Harden
-} else { Write-Host "Wrong answer... Leaving"; exit 1}
+} else { Write-Host "Wrong answer... Leaving"; exit 1 }
