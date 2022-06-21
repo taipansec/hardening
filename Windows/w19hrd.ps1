@@ -113,6 +113,10 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Shut down the system' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeShutdownPrivilege' -Options "replace"
 
+    Write-Host "Setting 'Change the time zone' to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeTimeZonePrivilege' -Options "replace"
+    Set-Policy -Group 'SERVICE LOCAL' -Key 'SeTimeZonePrivilege' -Options "add"
+
     Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
 

@@ -116,6 +116,25 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Shut down the system' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeShutdownPrivilege' -Options "replace"
 
+    # NEW ADDITIONS FOR DC ONLY
+    Write-Host "Setting 'Change the time zone' to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeTimeZonePrivilege' -Options "replace"
+    Set-Policy -Group 'SERVICE LOCAL' -Key 'SeTimeZonePrivilege' -Options "add"
+
+    Write-Host "Setting 'Add workstations to domain' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeMachineAccountPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Allow log on through Remote Desktop Services' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeRemoteInteractiveLogonRight' -Options "replace"
+
+    Write-Host "Setting 'Enable computer and user accounts to be trusted for delegation' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeEnableDelegationPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Impersonate a client after authentication' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeImpersonatePrivilege' -Options "replace"
+    
+    # END
+
     Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
 
@@ -191,14 +210,20 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Create symbolic links' to 'Administrators, NT VIRTUAL MACHINE\Virtual Machines'" -ForegroundColor Green
     Write-Host "Virtual Machines Object doesn't exist" -ForegroundColor Red
 
-    Write-Host "Setting 'Deny access to this computer from the network' to include 'Guests, Local account and member of Administrators group'" -ForegroundColor Green
+    Write-Host "Setting 'Deny access to this computer from the network' to include 'Guests'" -ForegroundColor Green
     Set-Policy -Group 'Invités' -Key 'SeDenyNetworkLogonRight' -Options "new"
-    Set-Policy -Group 'Compte local' -Key 'SeDenyNetworkLogonRight' -Options "add"
-    Set-Policy -Group 'Compte local et membre du groupe Administrateurs' -Key 'SeDenyNetworkLogonRight' -Options "add"
+
+    # Write-Host "Setting 'Deny access to this computer from the network' to include 'Guests, Local account and member of Administrators group'" -ForegroundColor Green
+    # Set-Policy -Group 'Invités' -Key 'SeDenyNetworkLogonRight' -Options "new"
+    # Set-Policy -Group 'Compte local' -Key 'SeDenyNetworkLogonRight' -Options "add"
+    # Set-Policy -Group 'Compte local et membre du groupe Administrateurs' -Key 'SeDenyNetworkLogonRight' -Options "add"
 
     Write-Host "Setting 'Deny log on through Remote Desktop Services' to 'Guests, Local account'" -ForegroundColor Green
     Set-Policy -Group 'Invités' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "new"
-    Set-Policy -Group 'Compte local' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "add"
+
+    # Write-Host "Setting 'Deny log on through Remote Desktop Services' to 'Guests, Local account'" -ForegroundColor Green
+    # Set-Policy -Group 'Invités' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "new"
+    # Set-Policy -Group 'Compte local' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "add"
 
     Write-Host "Setting 'Accounts: Administrator account status' to 'Disabled'" -ForegroundColor Green
     Set-Policy -Key "EnableAdminAccount =.*" -Options "replaceitem" -Pattern "EnableAdminAccount = 0"
@@ -214,6 +239,47 @@ Function SetLocalPolicies {
 
     Write-Host "Setting 'Network access: Restrict clients allowed to make remote calls to SAM' to 'Administrators: Remote Access: Allow'" -ForegroundColor Green
     Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\RestrictRemoteSAM=1,O:BAG:BAD:(A;;RC;;;BA)" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    # NEW REG FOR DC
+    Write-Host "Setting 'Audit: Force audit policy subcategory settings to override audit policy category settings' to 'enabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    Write-Host "Setting 'Devices: Allowed to format and eject removable media' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\AllocateDASD=1,"0"' -Options "newreg" -Pattern '^MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\)'
+
+    Write-Host "Setting 'Domain Controller: Allow server operators to schedule tasks' to 'disabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SubmitControl=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    Write-Host "Setting 'Domain controller: LDAP server channel binding token requirements' to 'Always'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Services\NTDS\Parameters\LdapEnforceChannelBinding=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\NTDS\\Parameters\\)'
+
+    Write-Host "Setting 'Domain controller: LDAP server signing requirements' to 'Always'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Services\NTDS\Parameters\LDAPServerIntegrity=4,2" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\NTDS\\Parameters\\)'
+    
+    Write-Host "Setting 'Domain controller: Refuse machine account password changes' to 'disabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Services\Netlogon\Parameters\RefusePasswordChange=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\Netlogon\\Parameters\\)'
+
+    Write-Host "Setting 'Interactive logon: Smart card removal behavior' to 'Lock Workstation or higher'" -ForegroundColor Green
+    Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ScRemoveOption=1,"1"' -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Winlogon\\)'
+
+    Write-Host "Setting 'Network access: Allow anonymous SID/Name translation' to 'disabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\TurnOffAnonymousBlock=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    Write-Host "Setting ''Network access: Named Pipes that can be accessed anonymously' to 'null'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionPipes=7," -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters)'
+
+    # Must check
+    Write-Host "Setting 'Windows Firewall: Domain: Firewall state' to 'On'" -ForegroundColor Green
+    Set-Policy -Key '\Policies\Microsoft\WindowsFirewall\DomainProfile\EnableFirewall=4,1' -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
+
+    Write-Host "Setting 'Windows Firewall: Domain: Inbound connections' to 'Block'" -ForegroundColor Green
+    Set-Policy -Key '\Policies\Microsoft\WindowsFirewall\DomainProfile\DefaultInboundAction=4,1' -Options "newreg" -Pattern '^MACHINE.*(\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile\\)'
+
+    Write-Host "Setting 'Windows Firewall: Domain: Outbound connections' to 'Allow'" -ForegroundColor Green
+    Set-Policy -Key '\Policies\Microsoft\WindowsFirewall\DomainProfile\DefaultOutboundAction=4,0' -Options "newreg" -Pattern '^MACHINE.*(\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile\\)'
+
+    Write-Host "Setting 'Windows Firewall: Domain: Settings: Display a notification' to 'No'" -ForegroundColor Green
+    Set-Policy -Key '\Policies\Microsoft\WindowsFirewall\DomainProfile\DefaultOutboundAction=4,0' -Options "newreg" -Pattern '^MACHINE.*(\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile\\)'
 }
 
 Function SetAccountPolicies {
@@ -232,11 +298,28 @@ Function SetAccountPolicies {
     Set-ADDefaultDomainPasswordPolicy -Identity $identity -MinPasswordLength 14
 }
 
-# $identity = $args[0]
-$removable = $args[1]
+Function Harden {
+    $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
+        if ($shouldctn -eq "y") {
+            Write-Host "Getting current policy" -ForegroundColor Yellow `r
+            GetSec
+            # $identity = Read-Host "Specify the domain identity:"
+            # SetAccountPolicies $identity
+            SetLocalPolicies
+            $currentdir = Get-Location
+            $removable = [string]$currentdir + "\temp.*"
+            Up-NewConf -rmtmp $removable
+        } else { Write-Host "Leaving..."; exit 0 }
+}
 
-Write-Host "Getting current policy" -ForegroundColor Yellow `r
-GetSec
-# SetAccountPolicies $identity
-SetLocalPolicies
-Up-NewConf -rmtmp $removable
+$backup = Read-Host "Should we backup the current configuration? (y/n)"
+
+if ($backup -eq "y") {
+    secedit /export /cfg actualconf.txt
+    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+    if ($exist -eq $true) {
+        Harden
+    } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
+} elseif ($backup -eq "n") {
+    Harden
+} else { Write-Host "Wrong answer... Leaving"; exit 1 }

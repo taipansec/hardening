@@ -1236,6 +1236,10 @@ function MBPolicies {
     [string]$almb = AccountsWithUserRight SeRemoteInteractiveLogonRight
     Checker $almb 'eqc' "BUILTIN\Utilisateurs du Bureau à distance BUILTIN\Administrateurs"
 
+    Write-Host "2.2.12 (L1) Ensure 'Change the time zone' is set to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    [string]$almb = AccountsWithUserRight SeRemoteInteractiveLogonRight
+    Checker $almb 'eqc' "NT\SERVICE LOCAL BUILTIN\Administrateurs"
+
     Write-Host "2.2.18 (L1) Ensure 'Create symbolic links' is set to 'Administrators, NT VIRTUAL MACHINE\Virtual Machines'" -ForegroundColor Green
     [string]$cslmb = AccountsWithUserRight SeCreateSymbolicLinkPrivilege
     Checker $cslmb 'eqc' "BUILTIN\Administrateurs NT VIRTUAL MACHINE\Machines virtuelles"
