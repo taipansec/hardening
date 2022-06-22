@@ -436,15 +436,17 @@ Function Harden {
 }
 
 $b = $args[0]
-$backup = Read-Host "Should we backup the current configuration? (y/n)"
 
 if ($b -eq "-b") {
     $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
     if ($exist -eq $true) {
+        secedit /validate .\actualconf.txt
         secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
+        secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
         gpupdate /force
     } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
 } else {
+    $backup = Read-Host "Should we backup the current configuration? (y/n)"
     if ($backup -eq "y") {
         secedit /export /cfg actualconf.txt
         $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
