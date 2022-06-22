@@ -394,6 +394,15 @@ Function SetLocalPolicies {
 
     Write-Host "Setting 'Audit Other System Events' to 'Success and Failure'" -ForegroundColor Green
     auditpol /set /subcategory:"Autres événements système" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Security State Change' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification de l'état de la sécurité" /success:enable
+
+    Write-Host "Setting 'Audit Security System Extension' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Extension système de sécurité" /success:enable
+
+    Write-Host "Setting 'Audit System Integrity' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Intégrité du système" /success:enable /failure:enable
 }
 
 Function SetAccountPolicies {
@@ -426,14 +435,23 @@ Function Harden {
         } else { Write-Host "Leaving..."; exit 0 }
 }
 
+$b = $args[0]
 $backup = Read-Host "Should we backup the current configuration? (y/n)"
 
-if ($backup -eq "y") {
-    secedit /export /cfg actualconf.txt
+if ($b -eq "-b") {
     $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
     if ($exist -eq $true) {
+        secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
+        gpupdate /force
+    } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
+} else {
+    if ($backup -eq "y") {
+        secedit /export /cfg actualconf.txt
+        $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+        if ($exist -eq $true) {
+            Harden
+        } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
+    } elseif ($backup -eq "n") {
         Harden
-    } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
-} elseif ($backup -eq "n") {
-    Harden
-} else { Write-Host "Wrong answer... Leaving"; exit 1 }
+    } else { Write-Host "Wrong answer... Leaving"; exit 1 }
+}
