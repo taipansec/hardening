@@ -427,6 +427,8 @@ function Backup {
         $rpl = Read-Host "Replace it? (y/n)"
         if ($rpl -eq "y") {
             secedit /export /cfg actualconf.txt
+            Write-Host "Previous configuration file replaced" -ForegroundColor Yellow
+            exit 0
         } elseif ($rpl -eq "n") {
             exit 0
         }
@@ -438,11 +440,25 @@ function Backup {
         $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
         if ($conf -eq $true) {
             Write-Host "Current configuration successfully saved" -ForegroundColor Green
+            exit 0
         } elseif ($conf -eq $false) {
             Write-Host "Failed to backup actual config... Leaving"
             exit 1
         }
     }
+}
+
+function Restore {
+    Write-Host "Rollback to the previous configuration." -ForegroundColor Yellow
+    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+    if ($exist -eq $true) {
+        secedit /validate .\actualconf.txt
+        secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
+        secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
+        gpupdate /force
+        Write-Host "Successfully rolled back. Leaving..." -ForegroundColor Green
+        exit 0
+    } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
 }
 
 function CIS-Help {
@@ -484,16 +500,7 @@ function Selector([string] $option) {
                 Backup
             }
             "-Restore" {
-                Write-Host "Rollback to the previous configuration." -ForegroundColor Yellow
-                $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-                if ($exist -eq $true) {
-                    secedit /validate .\actualconf.txt
-                    secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
-                    secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
-                    gpupdate /force
-                    Write-Host "Successfully rolled back. Leaving..." -ForegroundColor Green
-                    exit 0
-                } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
+                Restore
             }
             "-DomainAccountPolicies" {
                 $identity = Read-Host "Specify the domain identity:"
@@ -553,7 +560,11 @@ function Selector([string] $option) {
 }
 
 function Harden([string] $selector) {
-    $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
+    if ($selector -eq "-Backup" -Or $selector -eq "-Restore") {
+        Selector $selector
+    }
+    else {
+        $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
         if ($shouldctn -eq "y") {
             Write-Host "Getting current policy" -ForegroundColor Yellow `r
             GetSec
@@ -565,6 +576,7 @@ function Harden([string] $selector) {
             Remove-tmp -rmtmp $removable
             Write-Host "Done" -ForegroundColor Green
         } else { Write-Host "Leaving..."; exit 0 }
+    }
 }
 
 if (!$args[0]) {
