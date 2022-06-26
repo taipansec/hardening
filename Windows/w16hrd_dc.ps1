@@ -77,7 +77,7 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options, [string] 
     }
 }
 
-function Up-NewConf {
+function Up-NewConf([string] $rmtmp) {
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
@@ -86,10 +86,10 @@ function Up-NewConf {
 
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
-}
 
-function Remove-tmp([string] $rmtmp) {
     Remove-Item $rmtmp -ea 0
+
+    exit 0
 }
 
 function CIS-NetworkAccess {
@@ -569,12 +569,11 @@ function Harden([string] $selector) {
             Write-Host "Getting current policy" -ForegroundColor Yellow `r
             GetSec
             Selector $selector
-            Up-NewConf
+            Write-Host "Writing new configuration" -ForegroundColor Green
             $currentdir = Get-Location
             $removable = [string]$currentdir + "\temp.*"
             Write-Host "Removing temporary files..." -ForegroundColor Yellow
-            Remove-tmp -rmtmp $removable
-            Write-Host "Done" -ForegroundColor Green
+            Up-NewConf -rmtmp $removable
         } else { Write-Host "Leaving..."; exit 0 }
     }
 }
