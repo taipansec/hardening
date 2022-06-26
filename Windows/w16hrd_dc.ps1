@@ -448,7 +448,7 @@ Function Backup {
 
 Function CIS-Help {
     Write-Host "USAGE: script -Options"
-    Write-Host "Available options: script [-DomainAccountPolicies] [-GeneralConfig] [-Audit] [-Firewall] [-DCSecSpecific] [-Logon] [-DCSetting] [-Accounts] [-Security] [-NetworkSec] [-Network]"
+    Write-Host "Available options: script [-DomainAccountPolicies] [-GeneralConfig] [-Audit] [-Firewall] [-DCSecSpecific] [-Logon] [-DCSetting] [-Accounts] [-Security] [-NetworkSec] [-Network] [-All]"
     Write-Host "-DomainAccountPolicies" -ForegroundColor Yellow
     Write-Host "Bring change to the whole Domain and it's password rules specific- use wisely"
     Write-Host "-GeneralConfig" -ForegroundColor Yellow
@@ -471,6 +471,8 @@ Function CIS-Help {
     Write-Host "Apply network security rules"
     Write-Host "-Network" -ForegroundColor Yellow
     Write-Host "Apply network rules"
+    Write-Host "-All" -ForegroundColor Yellow
+    Write-Host "Apply everything except whole Domain rules"
 }
 
 Function Selector {
@@ -521,6 +523,18 @@ Function Selector {
                 CIS-NetworkSecurity
             }
             "-Network" {
+                CIS-NetworkAccess
+            }
+            "-All" {
+                CIS-GeneralPolicies
+                CIS-AuditLog
+                CIS-Firewall
+                CIS-DCSpecific
+                CIS-LogonSpecific
+                CIS-SettingDCOnly
+                CIS-Accounts
+                CIS-SecurityOptions
+                CIS-NetworkSecurity
                 CIS-NetworkAccess
             }
             Default {
