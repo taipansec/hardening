@@ -77,7 +77,7 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options, [string] 
     }
 }
 
-function Up-NewConf([string] $rmtmp) {
+function Up-NewConf() {
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
@@ -87,7 +87,11 @@ function Up-NewConf([string] $rmtmp) {
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
 
-    Remove-Item $rmtmp -ea 0
+    $currentdir = Get-Location
+    $removable = [string]$currentdir + "\temp.*"
+    Write-Host "Removing temporary files..." -ForegroundColor Yellow
+
+    Remove-Item $removable -ea 0
 
     exit 0
 }
@@ -506,7 +510,7 @@ function Selector([string] $option) {
             $identity = Read-Host "Specify the domain identity:"
             SetDomainAccountPolicies $identity
         }
-        "-GeneralConfig" {
+        "GeneralConfig" {
             CIS-GeneralPolicies
         }
         "-Audit" {
@@ -565,10 +569,7 @@ function Harden([string] $selector) {
             GetSec
             Selector $selector
             Write-Host "Writing new configuration" -ForegroundColor Green
-            $currentdir = Get-Location
-            $removable = [string]$currentdir + "\temp.*"
-            Write-Host "Removing temporary files..." -ForegroundColor Yellow
-            Up-NewConf -rmtmp $removable
+            Up-NewConf
         } else { Write-Host "Leaving..."; exit 0 }
     }
 }
