@@ -428,21 +428,21 @@ Function Backup {
             if ($rpl -eq "y") {
                 secedit /export /cfg actualconf.txt
             } elseif ($rpl -eq "n") {
-                break
+                continue
               }
-            } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
-    } elseif ($backup -eq "n") {
-        break
-    } else {
-        Write-Host "Backing up to actualconf.txt file" -ForegroundColor Yellow
-        secedit /export /cfg actualconf.txt
-        $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
-        if ($conf -eq $true) {
-            Write-Host "Current configuration successfully saved" -ForegroundColor Green
-        } elseif ($conf -eq $false) {
-            Write-Host "Failed to backup actual config... Leaving"
-            exit 1
+        } else {
+            Write-Host "Backing up to actualconf.txt file" -ForegroundColor Yellow
+            secedit /export /cfg actualconf.txt
+            $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
+            if ($conf -eq $true) {
+                Write-Host "Current configuration successfully saved" -ForegroundColor Green
+            } elseif ($conf -eq $false) {
+                Write-Host "Failed to backup actual config... Leaving"
+                exit 1
+            }
         }
+    } elseif ($backup -eq "n") {
+        continue
     }
 }
 
@@ -559,6 +559,6 @@ Function Harden {
         } else { Write-Host "Leaving..."; exit 0 }
 }
 
-if (args[0] -eq $false) {
+if (!$args[0]) {
     CIS-Help
 } else { Harden }
