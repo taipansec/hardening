@@ -90,60 +90,7 @@ function Up-NewConf([string] $rmtmp) {
     Remove-Item $rmtmp -ea 0
 }
 
-Function SetLocalPolicies {
-    Write-Host "######################" -ForegroundColor Yellow `r
-    Write-Host "LOCAL POLICIES CHAPTER" -ForegroundColor Yellow
-    Write-Host "######################" -ForegroundColor Yellow `r`n
-
-    Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeInteractiveLogonRight' -Options "replace"
-
-    Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
-
-    Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
-
-    Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyServiceLogonRight' -Options "new"
-
-    Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
-
-    Write-Host "Setting 'Restore files and directories' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeRestorePrivilege' -Options "replace"
-
-    Write-Host "Setting 'Shut down the system' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeShutdownPrivilege' -Options "replace"
-
-    # NEW ADDITIONS FOR DC ONLY
-    Write-Host "Setting 'Change the time zone' to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeTimeZonePrivilege' -Options "replace"
-    Set-Policy -Group 'SERVICE LOCAL' -Key 'SeTimeZonePrivilege' -Options "add"
-
-    Write-Host "Setting 'Add workstations to domain' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeMachineAccountPrivilege' -Options "replace"
-
-    Write-Host "Setting 'Allow log on through Remote Desktop Services' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeRemoteInteractiveLogonRight' -Options "replace"
-
-    Write-Host "Setting 'Enable computer and user accounts to be trusted for delegation' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeEnableDelegationPrivilege' -Options "replace"
-
-    Write-Host "Setting 'Impersonate a client after authentication' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeImpersonatePrivilege' -Options "replace"
-    
-    # END
-
-    Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
-
-    Write-Host "Setting 'Interactive logon: Do not display last user name' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\DontDisplayLastUsername=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUsername=4,1"
-
-    Write-Host "Setting 'Interactive logon: Machine inactivity limit' to '900 or fewer second(s), but not 0'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs=4,900" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
-
+Function CIS-NetworkAccess {
     Write-Host "Setting 'Microsoft network Client: Digitally sign communications (always)' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\LanmanWorkstation\\Parameters\\RequireSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\RequireSecuritySignature=4,1"
 
@@ -156,6 +103,27 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Network access: Shares that can be accessed anonymously' to 'None'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionShares=7,None" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters\\)'
 
+    Write-Host "Setting 'Access this computer from the network' to 'Administrators, Authenticated Users'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeNetworkLogonRight' -Options "replace"
+    Set-Policy -Group 'Utilisateurs authentifiés' -Key 'SeNetworkLogonRight' -Options "add"
+
+    Write-Host "Setting 'Microsoft network server: Server SPN target name validation level' to 'Accept if provided by client' or higher" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\SmbServerNameHardeningLevel=4,2" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\)'
+
+    Write-Host "Setting 'Network access: Do not allow anonymous enumeration of SAM accounts and shares' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\RestrictAnonymous=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymous=4,1"
+
+    Write-Host "Setting 'Network access: Restrict clients allowed to make remote calls to SAM' to 'Administrators: Remote Access: Allow'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\RestrictRemoteSAM=1,O:BAG:BAD:(A;;RC;;;BA)" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    Write-Host "Setting 'Network access: Allow anonymous SID/Name translation' to 'disabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\TurnOffAnonymousBlock=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    Write-Host "Setting ''Network access: Named Pipes that can be accessed anonymously' to 'null'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionPipes=7," -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters)'
+}
+
+Function CIS-NetworkSecurity {
     Write-Host "Setting 'Network security: Allow Local System to use computer identity for NTLM' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\System\CurrentControlSet\Control\Lsa\UseMachineId=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\)'
 
@@ -186,6 +154,19 @@ Function SetLocalPolicies {
 
     Write-Host "Setting 'Network security: Minimum session security for NTLM SSP based (including secure RPC) Servers' to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\Control\\Lsa\\MSV1_0\\NTLMMinServerSec=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
+}
+
+Function CIS-SecurityOptions {
+    Write-Host "Setting 'Interactive logon: Do not display last user name' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\DontDisplayLastUsername=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUsername=4,1"
+
+    Write-Host "Setting 'Interactive logon: Machine inactivity limit' to '900 or fewer second(s), but not 0'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs=4,900" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
+}
+
+Function CIS-Accounts {
+    Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
 
     Write-Host "Setting 'User Account Control: Admin Approval Mode for the Built-in Administrator account' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
@@ -199,54 +180,55 @@ Function SetLocalPolicies {
     Write-Host "Setting 'User Account Control: Run all administrators in Admin Approval Mode' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\EnableLUA=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA=4,1"
 
-    Write-Host "##################" -ForegroundColor Yellow `r
-    Write-Host "AD MEMBERS CHAPTER" -ForegroundColor Yellow
-    Write-Host "##################" -ForegroundColor Yellow `r`n
+    Write-Host "Setting 'Accounts: Administrator account status' to 'Disabled'" -ForegroundColor Green
+    Set-Policy -Key "EnableAdminAccount =.*" -Options "replaceitem" -Pattern "EnableAdminAccount = 0"
+}
 
-    Write-Host "Setting 'Access this computer from the network' to 'Administrators, Authenticated Users'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeNetworkLogonRight' -Options "replace"
-    Set-Policy -Group 'Utilisateurs authentifiés' -Key 'SeNetworkLogonRight' -Options "add"
+Function CIS-SettingDCOnly {
+    Write-Host "Setting 'Change the time zone' to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeTimeZonePrivilege' -Options "replace"
+    Set-Policy -Group 'SERVICE LOCAL' -Key 'SeTimeZonePrivilege' -Options "add"
 
-    Write-Host "Setting 'Create symbolic links' to 'Administrators, NT VIRTUAL MACHINE\Virtual Machines'" -ForegroundColor Green
-    Write-Host "Virtual Machines Object doesn't exist" -ForegroundColor Red
+    Write-Host "Setting 'Add workstations to domain' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeMachineAccountPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Enable computer and user accounts to be trusted for delegation' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeEnableDelegationPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Impersonate a client after authentication' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeImpersonatePrivilege' -Options "replace"
+}
+
+Function CIS-LogonSpecific {
+    Write-Host "Setting 'Allow log on through Remote Desktop Services' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeRemoteInteractiveLogonRight' -Options "replace"
 
     Write-Host "Setting 'Deny access to this computer from the network' to include 'Guests'" -ForegroundColor Green
     Set-Policy -Group 'Invités' -Key 'SeDenyNetworkLogonRight' -Options "new"
 
-    # Write-Host "Setting 'Deny access to this computer from the network' to include 'Guests, Local account and member of Administrators group'" -ForegroundColor Green
-    # Set-Policy -Group 'Invités' -Key 'SeDenyNetworkLogonRight' -Options "new"
-    # Set-Policy -Group 'Compte local' -Key 'SeDenyNetworkLogonRight' -Options "add"
-    # Set-Policy -Group 'Compte local et membre du groupe Administrateurs' -Key 'SeDenyNetworkLogonRight' -Options "add"
-
     Write-Host "Setting 'Deny log on through Remote Desktop Services' to 'Guests, Local account'" -ForegroundColor Green
     Set-Policy -Group 'Invités' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "new"
 
-    # Write-Host "Setting 'Deny log on through Remote Desktop Services' to 'Guests, Local account'" -ForegroundColor Green
-    # Set-Policy -Group 'Invités' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "new"
-    # Set-Policy -Group 'Compte local' -Key 'SeDenyRemoteInteractiveLogonRight' -Options "add"
+    Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeInteractiveLogonRight' -Options "replace"
 
-    Write-Host "Setting 'Accounts: Administrator account status' to 'Disabled'" -ForegroundColor Green
-    Set-Policy -Key "EnableAdminAccount =.*" -Options "replaceitem" -Pattern "EnableAdminAccount = 0"
+    Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
+    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
+
+    Write-Host "Setting 'Deny log on as a service' to include 'Guests'" -ForegroundColor Green
+    Set-Policy -Group 'Invités' -Key 'SeDenyServiceLogonRight' -Options "new"
+
+    Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
+    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
 
     Write-Host "Setting 'Interactive logon: Require Domain Controller Authentication to unlock workstation' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\ForceUnlockLogon=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ForceUnlockLogon=4,1"
 
-    Write-Host "Setting 'Microsoft network server: Server SPN target name validation level' to 'Accept if provided by client' or higher" -ForegroundColor Green
-    Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\SmbServerNameHardeningLevel=4,2" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\)'
+    Write-Host "Setting 'Interactive logon: Smart card removal behavior' to 'Lock Workstation or higher'" -ForegroundColor Green
+    Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ScRemoveOption="1"' -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Winlogon\\)'
+}
 
-    Write-Host "Setting 'Network access: Do not allow anonymous enumeration of SAM accounts and shares' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\RestrictAnonymous=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymous=4,1"
-
-    Write-Host "Setting 'Network access: Restrict clients allowed to make remote calls to SAM' to 'Administrators: Remote Access: Allow'" -ForegroundColor Green
-    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\RestrictRemoteSAM=1,O:BAG:BAD:(A;;RC;;;BA)" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
-
-    # NEW REG FOR DC
-    Write-Host "Setting 'Audit: Force audit policy subcategory settings to override audit policy category settings' to 'enabled'" -ForegroundColor Green
-    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
-
-    Write-Host "Setting 'Devices: Allowed to format and eject removable media' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\AllocateDASD=1,"0"' -Options "newreg" -Pattern '^MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\)'
-
+Function CIS-DCSpecific {
     Write-Host "Setting 'Domain Controller: Allow server operators to schedule tasks' to 'disabled'" -ForegroundColor Green
     Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SubmitControl=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
 
@@ -258,16 +240,9 @@ Function SetLocalPolicies {
     
     Write-Host "Setting 'Domain controller: Refuse machine account password changes' to 'disabled'" -ForegroundColor Green
     Set-Policy -Key "\System\CurrentControlSet\Services\Netlogon\Parameters\RefusePasswordChange=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\Netlogon\\Parameters\\)'
+}
 
-    Write-Host "Setting 'Interactive logon: Smart card removal behavior' to 'Lock Workstation or higher'" -ForegroundColor Green
-    Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ScRemoveOption="1"' -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Winlogon\\)'
-
-    Write-Host "Setting 'Network access: Allow anonymous SID/Name translation' to 'disabled'" -ForegroundColor Green
-    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\TurnOffAnonymousBlock=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
-
-    Write-Host "Setting ''Network access: Named Pipes that can be accessed anonymously' to 'null'" -ForegroundColor Green
-    Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionPipes=7," -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters)'
-
+Function CIS-Firewall {
     Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Firewall state' to 'On'" -ForegroundColor Green
     Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True
 
@@ -301,6 +276,11 @@ Function SetLocalPolicies {
 
     Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Log successful connections' to 'Yes'" -ForegroundColor Green
     Set-NetFirewallProfile -Profile Domain,Private,Public -LogAllowed True
+}
+
+Function CIS-AuditLog {
+    Write-Host "Setting 'Audit: Force audit policy subcategory settings to override audit policy category settings' to 'enabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
 
     Write-Host "Setting 'Audit Credential Validation' to 'Success and Failure'" -ForegroundColor Green
     auditpol /set /subcategory:"Validation des informations d'identification" /success:enable /failure:enable
@@ -405,7 +385,24 @@ Function SetLocalPolicies {
     auditpol /set /subcategory:"Intégrité du système" /success:enable /failure:enable
 }
 
-Function SetAccountPolicies {
+Function CIS-GeneralPolicies {
+    Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Restore files and directories' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeRestorePrivilege' -Options "replace"
+
+    Write-Host "Setting 'Shut down the system' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeShutdownPrivilege' -Options "replace"
+
+    Write-Host "Setting 'Create symbolic links' to 'Administrators, NT VIRTUAL MACHINE\Virtual Machines'" -ForegroundColor Green
+    Write-Host "Virtual Machines Object doesn't exist" -ForegroundColor Red
+
+    Write-Host "Setting 'Devices: Allowed to format and eject removable media' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\AllocateDASD=1,"0"' -Options "newreg" -Pattern '^MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\)'
+}
+
+Function SetDomainAccountPolicies {
     param (
         [Parameter(Mandatory=$true)][String]$identity
     )
@@ -421,39 +418,133 @@ Function SetAccountPolicies {
     Set-ADDefaultDomainPasswordPolicy -Identity $identity -MinPasswordLength 14
 }
 
+Function Backup {
+    $backup = Read-Host "Should we backup the current configuration? (y/n)"
+    if ($backup -eq "y") {
+        $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+        if ($exist -eq $true) {
+            Write-Host "Backup file already exists" -ForegroundColor Yellow
+            $rpl = Read-Host "Replace it? (y/n)"
+            if ($rpl -eq "y") {
+                secedit /export /cfg actualconf.txt
+            } elseif ($rpl -eq "n") {
+                break
+              }
+            } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
+    } elseif ($backup -eq "n") {
+        break
+    } else {
+        Write-Host "Backing up to actualconf.txt file" -ForegroundColor Yellow
+        secedit /export /cfg actualconf.txt
+        $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
+        if ($conf -eq $true) {
+            Write-Host "Current configuration successfully saved" -ForegroundColor Green
+        } elseif ($conf -eq $false) {
+            Write-Host "Failed to backup actual config... Leaving"
+            exit 1
+        }
+    }
+}
+
+Function CIS-Help {
+    Write-Host "USAGE: script -Options"
+    Write-Host "Available options: script [-DomainAccountPolicies] [-GeneralConfig] [-Audit] [-Firewall] [-DCSecSpecific] [-Logon] [-DCSetting] [-Accounts] [-Security] [-NetworkSec] [-Network]"
+    Write-Host "-DomainAccountPolicies" -ForegroundColor Yellow
+    Write-Host "Bring change to the whole Domain and it's password rules specific- use wisely"
+    Write-Host "-GeneralConfig" -ForegroundColor Yellow
+    Write-Host "Safe option - no impact expected"
+    Write-Host "-Audit" -ForegroundColor Yellow
+    Write-Host "Apply Audit and log rules on the target"
+    Write-Host "-Firewall" -ForegroundColor Yellow
+    Write-Host "Apply Windows firewall rules on the target"
+    Write-Host "-DCSecSpecific" -ForegroundColor Yellow
+    Write-Host "Domain Controller rules within the Security Options chapter of the CIS"
+    Write-Host "-Logon" -ForegroundColor Yellow
+    Write-Host "Apply logon related rules"
+    Write-Host "-DCSetting" -ForegroundColor Yellow
+    Write-Host "Apply general DC specific rules"
+    Write-Host "-Accounts" -ForegroundColor Yellow
+    Write-Host "Apply accounts rules"
+    Write-Host "-Security" -ForegroundColor Yellow
+    Write-Host "Apply general security rules"
+    Write-Host "-NetworkSec" -ForegroundColor Yellow
+    Write-Host "Apply network security rules"
+    Write-Host "-Network" -ForegroundColor Yellow
+    Write-Host "Apply network rules"
+}
+
+Function Selector {
+    $b = $args[0]
+
+    if ($b -eq "-b") {
+        Write-Host "Rollback to the previous configuration." -ForegroundColor Yellow
+        $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+        if ($exist -eq $true) {
+            secedit /validate .\actualconf.txt
+            secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
+            secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
+            gpupdate /force
+            Write-Host "Successfully rolled back. Leaving..." -ForegroundColor Green
+            exit 0
+        } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
+    } else {
+        switch ($b) {
+            "-DomainAccountPolicies" {
+                $identity = Read-Host "Specify the domain identity:"
+                SetDomainAccountPolicies $identity
+            }
+            "-GeneralConfig" {
+                CIS-GeneralPolicies
+            }
+            "-Audit" {
+                CIS-AuditLog
+            }
+            "-Firewall" {
+                CIS-Firewall
+            }
+            "-DCSecSpecific" {
+                CIS-DCSpecific
+            }
+            "-Logon" {
+                CIS-LogonSpecific
+            }
+            "-DCSetting" {
+                CIS-SettingDCOnly
+            }
+            "-Accounts" {
+                CIS-Accounts
+            }
+            "-Security" {
+                CIS-SecurityOptions
+            }
+            "-NetworkSec" {
+                CIS-NetworkSecurity
+            }
+            "-Network" {
+                CIS-NetworkAccess
+            }
+            Default {
+                Write-Host "No option specified!" -ForegroundColor Red
+                CIS-Help
+                exit 1
+            }
+        }
+    }
+}
+
 Function Harden {
+    Backup
     $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
         if ($shouldctn -eq "y") {
             Write-Host "Getting current policy" -ForegroundColor Yellow `r
             GetSec
-            # $identity = Read-Host "Specify the domain identity:"
-            # SetAccountPolicies $identity
-            SetLocalPolicies
+            Selector
             $currentdir = Get-Location
             $removable = [string]$currentdir + "\temp.*"
             Up-NewConf -rmtmp $removable
         } else { Write-Host "Leaving..."; exit 0 }
 }
 
-$b = $args[0]
-
-if ($b -eq "-b") {
-    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-    if ($exist -eq $true) {
-        secedit /validate .\actualconf.txt
-        secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
-        secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
-        gpupdate /force
-    } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
-} else {
-    $backup = Read-Host "Should we backup the current configuration? (y/n)"
-    if ($backup -eq "y") {
-        secedit /export /cfg actualconf.txt
-        $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-        if ($exist -eq $true) {
-            Harden
-        } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
-    } elseif ($backup -eq "n") {
-        Harden
-    } else { Write-Host "Wrong answer... Leaving"; exit 1 }
-}
+if (args[0] -eq $false) {
+    CIS-Help
+} else { Harden }
