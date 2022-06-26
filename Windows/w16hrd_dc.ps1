@@ -17,11 +17,11 @@ function GetSidType([string] $sidtype, [string] $username, [string] $group) {
     }
 }
 
-function GetSec() {
+function GetSec {
     secedit /export /cfg $Global:ConfFile
 }
 
-function SetConf() {
+function SetConf {
     Set-Content -Path $Global:ConfFile -Value $Global:newConfig
 }
 
@@ -77,7 +77,7 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options, [string] 
     }
 }
 
-function Up-NewConf([string] $rmtmp) {
+function Up-NewConf {
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
@@ -86,11 +86,13 @@ function Up-NewConf([string] $rmtmp) {
 
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
+}
 
+function Remove-tmp([string] $rmtmp) {
     Remove-Item $rmtmp -ea 0
 }
 
-Function CIS-NetworkAccess {
+function CIS-NetworkAccess {
     Write-Host "Setting 'Microsoft network Client: Digitally sign communications (always)' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\LanmanWorkstation\\Parameters\\RequireSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\RequireSecuritySignature=4,1"
 
@@ -123,7 +125,7 @@ Function CIS-NetworkAccess {
     Set-Policy -Key "\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionPipes=7," -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters)'
 }
 
-Function CIS-NetworkSecurity {
+function CIS-NetworkSecurity {
     Write-Host "Setting 'Network security: Allow Local System to use computer identity for NTLM' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\System\CurrentControlSet\Control\Lsa\UseMachineId=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\)'
 
@@ -156,7 +158,7 @@ Function CIS-NetworkSecurity {
     Set-Policy -Key "MACHINE.*(\\Control\\Lsa\\MSV1_0\\NTLMMinServerSec=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
 }
 
-Function CIS-SecurityOptions {
+function CIS-SecurityOptions {
     Write-Host "Setting 'Interactive logon: Do not display last user name' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\DontDisplayLastUsername=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUsername=4,1"
 
@@ -164,7 +166,7 @@ Function CIS-SecurityOptions {
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs=4,900" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
 }
 
-Function CIS-Accounts {
+function CIS-Accounts {
     Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
 
@@ -184,7 +186,7 @@ Function CIS-Accounts {
     Set-Policy -Key "EnableAdminAccount =.*" -Options "replaceitem" -Pattern "EnableAdminAccount = 0"
 }
 
-Function CIS-SettingDCOnly {
+function CIS-SettingDCOnly {
     Write-Host "Setting 'Change the time zone' to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeTimeZonePrivilege' -Options "replace"
     Set-Policy -Group 'SERVICE LOCAL' -Key 'SeTimeZonePrivilege' -Options "add"
@@ -199,7 +201,7 @@ Function CIS-SettingDCOnly {
     Set-Policy -Group 'Administrateurs' -Key 'SeImpersonatePrivilege' -Options "replace"
 }
 
-Function CIS-LogonSpecific {
+function CIS-LogonSpecific {
     Write-Host "Setting 'Allow log on through Remote Desktop Services' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeRemoteInteractiveLogonRight' -Options "replace"
 
@@ -228,7 +230,7 @@ Function CIS-LogonSpecific {
     Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ScRemoveOption="1"' -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Winlogon\\)'
 }
 
-Function CIS-DCSpecific {
+function CIS-DCSpecific {
     Write-Host "Setting 'Domain Controller: Allow server operators to schedule tasks' to 'disabled'" -ForegroundColor Green
     Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SubmitControl=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
 
@@ -242,7 +244,7 @@ Function CIS-DCSpecific {
     Set-Policy -Key "\System\CurrentControlSet\Services\Netlogon\Parameters\RefusePasswordChange=4,0" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\Netlogon\\Parameters\\)'
 }
 
-Function CIS-Firewall {
+function CIS-Firewall {
     Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Firewall state' to 'On'" -ForegroundColor Green
     Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True
 
@@ -278,7 +280,7 @@ Function CIS-Firewall {
     Set-NetFirewallProfile -Profile Domain,Private,Public -LogAllowed True
 }
 
-Function CIS-AuditLog {
+function CIS-AuditLog {
     Write-Host "Setting 'Audit: Force audit policy subcategory settings to override audit policy category settings' to 'enabled'" -ForegroundColor Green
     Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
 
@@ -385,7 +387,7 @@ Function CIS-AuditLog {
     auditpol /set /subcategory:"Intégrité du système" /success:enable /failure:enable
 }
 
-Function CIS-GeneralPolicies {
+function CIS-GeneralPolicies {
     Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
 
@@ -402,7 +404,7 @@ Function CIS-GeneralPolicies {
     Set-Policy -Key '\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\AllocateDASD=1,"0"' -Options "newreg" -Pattern '^MACHINE.*(\\Windows NT\\CurrentVersion\\Winlogon\\)'
 }
 
-Function SetDomainAccountPolicies {
+function SetDomainAccountPolicies {
     param (
         [Parameter(Mandatory=$true)][String]$identity
     )
@@ -418,79 +420,81 @@ Function SetDomainAccountPolicies {
     Set-ADDefaultDomainPasswordPolicy -Identity $identity -MinPasswordLength 14
 }
 
-Function Backup {
-    $backup = Read-Host "Should we backup the current configuration? (y/n)"
-    if ($backup -eq "y") {
-        $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-        if ($exist -eq $true) {
-            Write-Host "Backup file already exists" -ForegroundColor Yellow
-            $rpl = Read-Host "Replace it? (y/n)"
-            if ($rpl -eq "y") {
-                secedit /export /cfg actualconf.txt
-            } elseif ($rpl -eq "n") {
-                continue
-              }
-        } else {
-            Write-Host "Backing up to actualconf.txt file" -ForegroundColor Yellow
+function Backup {
+    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+    if ($exist -eq $true) {
+        Write-Host "Backup file already exists" -ForegroundColor Yellow
+        $rpl = Read-Host "Replace it? (y/n)"
+        if ($rpl -eq "y") {
             secedit /export /cfg actualconf.txt
-            $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
-            if ($conf -eq $true) {
-                Write-Host "Current configuration successfully saved" -ForegroundColor Green
-            } elseif ($conf -eq $false) {
-                Write-Host "Failed to backup actual config... Leaving"
-                exit 1
-            }
+        } elseif ($rpl -eq "n") {
+            exit 0
         }
     } elseif ($backup -eq "n") {
-        continue
+            exit 0
+    } else {
+        Write-Host "Backing up to actualconf.txt file" -ForegroundColor Yellow
+        secedit /export /cfg actualconf.txt
+        $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
+        if ($conf -eq $true) {
+            Write-Host "Current configuration successfully saved" -ForegroundColor Green
+        } elseif ($conf -eq $false) {
+            Write-Host "Failed to backup actual config... Leaving"
+            exit 1
+        }
     }
 }
 
-Function CIS-Help {
-    Write-Host "USAGE: script -Options"
-    Write-Host "Available options: script [-DomainAccountPolicies] [-GeneralConfig] [-Audit] [-Firewall] [-DCSecSpecific] [-Logon] [-DCSetting] [-Accounts] [-Security] [-NetworkSec] [-Network] [-All]"
+function CIS-Help {
+    Write-Host "USAGE: script -Options" `r`n
+    Write-Host "Available options: script [-DomainAccountPolicies] [-GeneralConfig] [-Audit] [-Firewall] [-DCSecSpecific] [-Logon] [-DCSetting] [-Accounts] [-Security] [-NetworkSec] [-Network] [-All] [-Backup] [-Restore]" `r`n
     Write-Host "-DomainAccountPolicies" -ForegroundColor Yellow
-    Write-Host "Bring change to the whole Domain and it's password rules specific- use wisely"
+    Write-Host "Bring change to the whole Domain and it's password rules specific- use wisely" `r`n
     Write-Host "-GeneralConfig" -ForegroundColor Yellow
-    Write-Host "Safe option - no impact expected"
+    Write-Host "Safe option - no impact expected" `r`n
     Write-Host "-Audit" -ForegroundColor Yellow
-    Write-Host "Apply Audit and log rules on the target"
+    Write-Host "Apply Audit and log rules on the target" `r`n
     Write-Host "-Firewall" -ForegroundColor Yellow
-    Write-Host "Apply Windows firewall rules on the target"
+    Write-Host "Apply Windows firewall rules on the target" `r`n
     Write-Host "-DCSecSpecific" -ForegroundColor Yellow
-    Write-Host "Domain Controller rules within the Security Options chapter of the CIS"
+    Write-Host "Domain Controller rules within the Security Options chapter of the CIS" `r`n
     Write-Host "-Logon" -ForegroundColor Yellow
-    Write-Host "Apply logon related rules"
+    Write-Host "Apply logon related rules" `r`n
     Write-Host "-DCSetting" -ForegroundColor Yellow
-    Write-Host "Apply general DC specific rules"
+    Write-Host "Apply general DC specific rules" `r`n
     Write-Host "-Accounts" -ForegroundColor Yellow
-    Write-Host "Apply accounts rules"
+    Write-Host "Apply accounts rules" `r`n
     Write-Host "-Security" -ForegroundColor Yellow
-    Write-Host "Apply general security rules"
+    Write-Host "Apply general security rules" `r`n
     Write-Host "-NetworkSec" -ForegroundColor Yellow
-    Write-Host "Apply network security rules"
+    Write-Host "Apply network security rules" `r`n
     Write-Host "-Network" -ForegroundColor Yellow
-    Write-Host "Apply network rules"
+    Write-Host "Apply network rules" `r`n
     Write-Host "-All" -ForegroundColor Yellow
-    Write-Host "Apply everything except whole Domain rules"
+    Write-Host "Apply everything except whole Domain rules" `r`n
+    Write-Host "-Backup" -ForegroundColor Yellow
+    Write-Host "Backup the actual configuration and save it to actualconf.txt" `r`n
+    Write-Host "-Restore" -ForegroundColor Yellow
+    Write-Host "Rollback to the previous saved configuration" `r`n
 }
 
-Function Selector {
-    $b = $args[0]
-
-    if ($b -eq "-b") {
-        Write-Host "Rollback to the previous configuration." -ForegroundColor Yellow
-        $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-        if ($exist -eq $true) {
-            secedit /validate .\actualconf.txt
-            secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
-            secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
-            gpupdate /force
-            Write-Host "Successfully rolled back. Leaving..." -ForegroundColor Green
-            exit 0
-        } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
-    } else {
-        switch ($b) {
+function Selector([string] $option) {
+    switch ($option) {
+            "-Backup" {
+                Backup
+            }
+            "-Restore" {
+                Write-Host "Rollback to the previous configuration." -ForegroundColor Yellow
+                $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+                if ($exist -eq $true) {
+                    secedit /validate .\actualconf.txt
+                    secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
+                    secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
+                    gpupdate /force
+                    Write-Host "Successfully rolled back. Leaving..." -ForegroundColor Green
+                    exit 0
+                } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
+            }
             "-DomainAccountPolicies" {
                 $identity = Read-Host "Specify the domain identity:"
                 SetDomainAccountPolicies $identity
@@ -537,28 +541,32 @@ Function Selector {
                 CIS-NetworkSecurity
                 CIS-NetworkAccess
             }
+            "-Backup" {
+                Backup
+            }
             Default {
                 Write-Host "No option specified!" -ForegroundColor Red
                 CIS-Help
                 exit 1
             }
         }
-    }
 }
 
-Function Harden {
-    Backup
+function Harden([string] $selector) {
     $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
         if ($shouldctn -eq "y") {
             Write-Host "Getting current policy" -ForegroundColor Yellow `r
             GetSec
-            Selector
+            Selector $selector
+            Up-NewConf
             $currentdir = Get-Location
             $removable = [string]$currentdir + "\temp.*"
-            Up-NewConf -rmtmp $removable
+            Write-Host "Removing temporary files..." -ForegroundColor Yellow
+            Remove-tmp -rmtmp $removable
+            Write-Host "Done" -ForegroundColor Green
         } else { Write-Host "Leaving..."; exit 0 }
 }
 
 if (!$args[0]) {
     CIS-Help
-} else { Harden }
+} else { Harden $args[0]}
