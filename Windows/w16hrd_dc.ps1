@@ -77,7 +77,7 @@ function Set-Policy([string] $Group, [string] $Key, [string] $Options, [string] 
     }
 }
 
-function Up-NewConf() {
+function Up-NewConf([string] $rmtmp) {
     Write-Host "Importing new policy on temp database" -ForegroundColor White
     secedit /import /db $Global:DBFile /overwrite /cfg $Global:ConfFile /quiet
 
@@ -87,10 +87,7 @@ function Up-NewConf() {
     Write-Host "Updating policy" -ForegroundColor White `r
     gpupdate /force
 
-    $currentdir = Get-Location
-    $removable = [string]$currentdir + "\temp.*"
-    Write-Host "Removing temporary files..." -ForegroundColor Yellow
-    Remove-Item $removable -ea 0
+    Remove-Item $rmtmp -ea 0
 
     exit 0
 }
@@ -499,76 +496,62 @@ function CIS-Help {
 
 function Selector([string] $option) {
     switch ($option) {
-            "-Backup" {
-                Backup
-            }
-            "-Restore" {
-                Restore
-            }
-            "-DomainAccountPolicies" {
-                $identity = Read-Host "Specify the domain identity:"
-                SetDomainAccountPolicies $identity
-                Up-NewConf
-            }
-            "-GeneralConfig" {
-                CIS-GeneralPolicies
-                Up-NewConf
-            }
-            "-Audit" {
-                CIS-AuditLog
-                Up-NewConf
-            }
-            "-Firewall" {
-                CIS-Firewall
-                Up-NewConf
-            }
-            "-DCSecSpecific" {
-                CIS-DCSpecific
-                Up-NewConf
-            }
-            "-Logon" {
-                CIS-LogonSpecific
-                Up-NewConf
-            }
-            "-DCSetting" {
-                CIS-SettingDCOnly
-                Up-NewConf
-            }
-            "-Accounts" {
-                CIS-Accounts
-                Up-NewConf
-            }
-            "-Security" {
-                CIS-SecurityOptions
-                Up-NewConf
-            }
-            "-NetworkSec" {
-                CIS-NetworkSecurity
-                Up-NewConf
-            }
-            "-Network" {
-                CIS-NetworkAccess
-                Up-NewConf
-            }
-            "-All" {
-                CIS-GeneralPolicies
-                CIS-AuditLog
-                CIS-Firewall
-                CIS-DCSpecific
-                CIS-LogonSpecific
-                CIS-SettingDCOnly
-                CIS-Accounts
-                CIS-SecurityOptions
-                CIS-NetworkSecurity
-                CIS-NetworkAccess
-                Up-NewConf
-            }
-            Default {
-                Write-Host "No option specified!" -ForegroundColor Red
-                CIS-Help
-                exit 1
-            }
+        "-Backup"   {
+            Backup
         }
+        "-Restore" {
+            Restore
+        }
+        "-DomainAccountPolicies" {
+            $identity = Read-Host "Specify the domain identity:"
+            SetDomainAccountPolicies $identity
+        }
+        "-GeneralConfig" {
+            CIS-GeneralPolicies
+        }
+        "-Audit" {
+            CIS-AuditLog
+        }
+        "-Firewall" {
+            CIS-Firewall
+        }
+        "-DCSecSpecific" {
+            CIS-DCSpecific
+        }
+        "-Logon" {
+            CIS-LogonSpecific
+        }
+        "-DCSetting" {
+            CIS-SettingDCOnly
+        }
+        "-Accounts" {
+            CIS-Accounts
+        }
+        "-Security" {
+            CIS-SecurityOptions
+        }
+        "-NetworkSec" {
+            CIS-NetworkSecurity
+        }
+        "-Network" {
+            CIS-NetworkAccess
+        }
+        "-All" {
+            CIS-GeneralPolicies
+            CIS-AuditLog
+            CIS-Firewall
+            CIS-DCSpecific
+            CIS-LogonSpecific
+            CIS-SettingDCOnly
+            CIS-Accounts
+            CIS-SecurityOptions
+            CIS-NetworkSecurity
+            CIS-NetworkAccess
+        }
+        "-Backup" {
+            Backup
+        }
+    }
 }
 
 function Harden([string] $selector) {
@@ -581,6 +564,11 @@ function Harden([string] $selector) {
             Write-Host "Getting current policy" -ForegroundColor Yellow `r
             GetSec
             Selector $selector
+            Write-Host "Writing new configuration" -ForegroundColor Green
+            $currentdir = Get-Location
+            $removable = [string]$currentdir + "\temp.*"
+            Write-Host "Removing temporary files..." -ForegroundColor Yellow
+            Up-NewConf -rmtmp $removable
         } else { Write-Host "Leaving..."; exit 0 }
     }
 }
