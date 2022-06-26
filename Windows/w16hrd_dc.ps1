@@ -500,7 +500,7 @@ function CIS-Help {
 
 function Selector([string] $option) {
     switch ($option) {
-        "-Backup"   {
+        "-Backup" {
             Backup
         }
         "-Restore" {
@@ -510,7 +510,7 @@ function Selector([string] $option) {
             $identity = Read-Host "Specify the domain identity:"
             SetDomainAccountPolicies $identity
         }
-        "GeneralConfig" {
+        "-GeneralConfig" {
             CIS-GeneralPolicies
         }
         "-Audit" {
@@ -554,6 +554,11 @@ function Selector([string] $option) {
         }
         "-Backup" {
             Backup
+        }
+        Default {
+            Write-Host "Invalid option!" -ForegroundColor Red
+            CIS-Help
+            exit 1
         }
     }
 }
