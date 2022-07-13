@@ -223,39 +223,36 @@ function CIS-MemberSetting {
 }
 
 function CIS-Firewall {
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Firewall state' to 'On'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True
+    Write-Host "Setting 'Windows Firewall: Private,Public: Firewall state' to 'On'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private,Public -Enabled True
 
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Inbound connections' to 'Block'" -ForegroundColor Green
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Outbound connections' to 'Allow'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultInboundAction Block -DefaultOutboundAction Allow
+    Write-Host "Setting 'Windows Firewall: Private,Public: Inbound connections' to 'Block'" -ForegroundColor Green
+    Write-Host "Setting 'Windows Firewall: Private,Public: Outbound connections' to 'Allow'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private,Public -DefaultInboundAction Block -DefaultOutboundAction Allow
 
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Settings: Display a notification' to 'No'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain,Private,Public -NotifyOnListen False
+    Write-Host "Setting 'Windows Firewall: Private,Public: Settings: Display a notification' to 'No'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private,Public -NotifyOnListen False
 
     Write-Host "Setting 'Windows Firewall: Public: Settings: Apply local firewall rules' to 'No'" -ForegroundColor Green
-    Set-NetFirewallProfile -Public -AllowLocalFirewallRules False
+    Set-NetFirewallProfile -Profile Public -AllowLocalFirewallRules False
 
     Write-Host "Setting 'Windows Firewall: Public: Settings: Apply local connection security rules' to 'No'" -ForegroundColor Green
-    Set-NetFirewallProfile -Public -AllowLocalIPsecRules False
-
-    Write-Host "Setting 'Windows Firewall: Domain: Logging: Name' to '%SystemRoot%\System32\logfiles\firewall\domainfw.log'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain -LogFileName %SystemRoot%\System32\LogFiles\Firewall\domainfw.log
+    Set-NetFirewallProfile -Profile Public -AllowLocalIPsecRules False
 
     Write-Host "Setting 'Windows Firewall: Private: Logging: Name' to '%SystemRoot%\System32\logfiles\firewall\privatefw.log'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Private -LogFileName %SystemRoot%\System32\LogFiles\Firewall\privatefw.log
+    Set-NetFirewallProfile -Profile Private -LogFileName %SystemRoot%\System32\logfiles\firewall\privatefw.log
 
     Write-Host "Setting 'Windows Firewall: Public: Logging: Name' to '%SystemRoot%\System32\logfiles\firewall\publicfw.log'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Public -LogFileName %SystemRoot%\System32\LogFiles\Firewall\publicfw.log
+    Set-NetFirewallProfile -Profile Public -LogFileName %SystemRoot%\System32\logfiles\firewall\publicfw.log
 
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Size limit(KB)' to '16384 KB'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain,Private,Public -LogMaxSizeKilobytes 16384
+    Write-Host "Setting 'Windows Firewall: Private,Public: Logging: Size limit(KB)' to '16384 KB'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private,Public -LogMaxSizeKilobytes 16384
 
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Log dropped packets' to 'Yes'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain,Private,Public -LogBlocked True
+    Write-Host "Setting 'Windows Firewall: Private,Public: Logging: Log dropped packets' to 'Yes'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private,Public -LogBlocked True
 
-    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Log successful connections' to 'Yes'" -ForegroundColor Green
-    Set-NetFirewallProfile -Profile Domain,Private,Public -LogAllowed True
+    Write-Host "Setting 'Windows Firewall: Private,Public: Logging: Log successful connections' to 'Yes'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private,Public -LogAllowed True
 }
 
 function CIS-AuditLog {
@@ -265,23 +262,8 @@ function CIS-AuditLog {
     Write-Host "Setting 'Audit Credential Validation' to 'Success and Failure'" -ForegroundColor Green
     auditpol /set /subcategory:"Validation des informations d'identification" /success:enable /failure:enable
 
-    Write-Host "Setting 'Audit Kerberos Authentication Service' to 'Success and Failure'" -ForegroundColor Green
-    auditpol /set /subcategory:"Service d'authentification Kerberos" /success:enable /failure:enable
-
-    Write-Host "Setting 'Audit Kerberos Service Ticket Operations' to 'Success and Failure'" -ForegroundColor Green
-    auditpol /set /subcategory:"Opérations de ticket du service Kerberos" /success:enable /failure:enable
-
     Write-Host "Setting 'Audit Application Group Management' to 'Success and Failure'" -ForegroundColor Green
     auditpol /set /subcategory:"Gestion des groupes d'applications" /success:enable /failure:enable
-
-    Write-Host "Setting 'Audit Computer Account Management' to 'Success'" -ForegroundColor Green
-    auditpol /set /subcategory:"Gestion des comptes d'ordinateur" /success:enable
-
-    Write-Host "Setting 'Audit Distribution Group Management' to 'Success'" -ForegroundColor Green
-    auditpol /set /subcategory:"Gestion des groupes de distribution" /success:enable
-
-    Write-Host "Setting 'Audit Other Account Management Events' to 'Success'" -ForegroundColor Green
-    auditpol /set /subcategory:"Autres événements de gestion des comptes" /success:enable
 
     Write-Host "Setting 'Audit Security Group Management' to 'Success'" -ForegroundColor Green
     auditpol /set /subcategory:"Gestion des groupes de sécurité" /success:enable
@@ -294,12 +276,6 @@ function CIS-AuditLog {
 
     Write-Host "Setting 'Audit Process Creation' to 'Success'" -ForegroundColor Green
     auditpol /set /subcategory:"Création du processus" /success:enable
-
-    Write-Host "Setting 'Audit Directory Service Access' to 'Failure'" -ForegroundColor Green
-    auditpol /set /subcategory:"Accès au service d'annuaire" /failure:enable
-
-    Write-Host "Setting 'Audit Directory Service Changes' to 'Success'" -ForegroundColor Green
-    auditpol /set /subcategory:"Modification du service d'annuaire" /success:enable
 
     Write-Host "Setting 'Audit Account Lockout' to 'Failure'" -ForegroundColor Green
     auditpol /set /subcategory:"Verrouillage du compte" /failure:enable
