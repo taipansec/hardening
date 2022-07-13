@@ -90,22 +90,9 @@ function Up-NewConf([string] $rmtmp) {
     Remove-Item $rmtmp -ea 0
 }
 
-Function SetLocalPolicies {
-    Write-Host "######################" -ForegroundColor Yellow `r
-    Write-Host "LOCAL POLICIES CHAPTER" -ForegroundColor Yellow
-    Write-Host "######################" -ForegroundColor Yellow `r`n
-
-    Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
-    Set-Policy -Group 'Administrateurs' -Key 'SeInteractiveLogonRight' -Options "replace"
-
+function CIS-GeneralPolicies {
     Write-Host "Setting 'Back up files and directories' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeBackupPrivilege' -Options "replace"
-
-    Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
-
-    Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
-    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
 
     Write-Host "Setting 'Restore files and directories' to 'Administrators'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeRestorePrivilege' -Options "replace"
@@ -116,28 +103,46 @@ Function SetLocalPolicies {
     Write-Host "Setting 'Change the time zone' to 'Administrators, LOCAL SERVICE'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeTimeZonePrivilege' -Options "replace"
     Set-Policy -Group 'SERVICE LOCAL' -Key 'SeTimeZonePrivilege' -Options "add"
+}
+
+function CIS-Accounts {
+    Write-Host "Setting 'User Account Control: Admin Approval Mode for the Built-in Administrator account' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
+
+    Write-Host "Setting 'User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode' to 'Prompt for consent on the secure desktop'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\ConsentPromptBehaviorAdmin=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorAdmin=4,2"
+
+    Write-Host "Setting 'User Account Control: Behavior of the elevation prompt for standard users' to 'Automatically deny elevation requests'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\ConsentPromptBehaviorUser=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorUser=4,0"
+
+    Write-Host "Setting 'User Account Control: Run all administrators in Admin Approval Mode' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\EnableLUA=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA=4,1"
+
+    Write-Host "Setting 'User Account Control: Switch to the secure desktop when prompting for elevation' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\PromptOnSecureDesktop=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\PromptOnSecureDesktop=4,1"
 
     Write-Host "Setting 'Accounts: Block Microsoft accounts' to 'Users can't add or log on with Microsoft accounts'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser=4,3" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
+}
+
+function CIS-LogonSpecific {
+    Write-Host "Setting 'Allow log on locally' to 'Administrators'" -ForegroundColor Green
+    Set-Policy -Group 'Administrateurs' -Key 'SeInteractiveLogonRight' -Options "replace"
+
+    Write-Host "Setting 'Deny log on as a batch job' to include 'Guests'" -ForegroundColor Green
+    Set-Policy -Group 'Invités' -Key 'SeDenyBatchLogonRight' -Options "new"
+
+    Write-Host "Setting 'Deny log on locally' to include 'Guests'" -ForegroundColor Green
+    Set-Policy -Group 'Invités' -Key 'SeDenyInteractiveLogonRight' -Options "new"
 
     Write-Host "Setting 'Interactive logon: Don't display last signed-in' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\DontDisplayLastUsername=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUsername=4,1"
 
     Write-Host "Setting 'Interactive logon: Machine inactivity limit' to '900 or fewer second(s), but not 0'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs=4,900" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
+}
 
-    Write-Host "Setting 'Microsoft network Client: Digitally sign communications (always)' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\LanmanWorkstation\\Parameters\\RequireSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\RequireSecuritySignature=4,1"
-
-    Write-Host "Setting 'Microsoft network Server: Digitally sign communications (always)' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\LanManServer\\Parameters\\RequireSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\RequireSecuritySignature=4,1"
-
-    Write-Host "Setting 'Microsoft network Server: Digitally sign communications (if client agrees)' 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\LanManServer\\Parameters\\EnableSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\EnableSecuritySignature=4,1"
-
-    Write-Host "Setting 'Network access: Shares that can be accessed anonymously' to 'None'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionShares=7,None" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters\\)'
-
+function CIS-NetworkSecurity {
     Write-Host "Setting 'Network security: Allow Local System to use computer identity for NTLM' to 'Enabled'" -ForegroundColor Green
     Set-Policy -Key "MACHINE\System\CurrentControlSet\Control\Lsa\UseMachineId=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\)'
 
@@ -168,27 +173,23 @@ Function SetLocalPolicies {
 
     Write-Host "Setting 'Network security: Minimum session security for NTLM SSP based (including secure RPC) Servers' to 'Require NTLMv2 session security, Require 128-bit encryption'" -ForegroundColor Green
     Set-Policy -Key "MACHINE.*(\\Control\\Lsa\\MSV1_0\\NTLMMinServerSec=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Control\Lsa\MSV1_0\NTLMMinServerSec=4,537395200"
+}
 
-    Write-Host "Setting 'User Account Control: Admin Approval Mode for the Built-in Administrator account' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentVersion\\Policies\\System\\)'
+Function CIS-NetworkAccess {
+    Write-Host "Setting 'Microsoft network Client: Digitally sign communications (always)' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\LanmanWorkstation\\Parameters\\RequireSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\RequireSecuritySignature=4,1"
 
-    Write-Host "Setting 'User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode' to 'Prompt for consent on the secure desktop'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\ConsentPromptBehaviorAdmin=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorAdmin=4,2"
+    Write-Host "Setting 'Microsoft network Server: Digitally sign communications (always)' to 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\LanManServer\\Parameters\\RequireSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\RequireSecuritySignature=4,1"
 
-    Write-Host "Setting 'User Account Control: Behavior of the elevation prompt for standard users' to 'Automatically deny elevation requests'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\ConsentPromptBehaviorUser=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorUser=4,0"
+    Write-Host "Setting 'Microsoft network Server: Digitally sign communications (if client agrees)' 'Enabled'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE.*(\\LanManServer\\Parameters\\EnableSecuritySignature=).*" -Options "replaceitem" -Pattern "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\EnableSecuritySignature=4,1"
 
-    Write-Host "Setting 'User Account Control: Run all administrators in Admin Approval Mode' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\EnableLUA=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA=4,1"
+    Write-Host "Setting 'Network access: Shares that can be accessed anonymously' to 'None'" -ForegroundColor Green
+    Set-Policy -Key "MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\NullSessionShares=7,None" -Options "newreg" -Pattern '^MACHINE.*(\\Services\\LanManServer\\Parameters\\)'
+}
 
-    Write-Host "Setting 'User Account Control: Switch to the secure desktop when prompting for elevation' to 'Enabled'" -ForegroundColor Green
-    Set-Policy -Key "MACHINE.*(\\CurrentVersion\\Policies\\System\\PromptOnSecureDesktop=).*" -Options "replaceitem" -Pattern "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\PromptOnSecureDesktop=4,1"
-
-
-    Write-Host "##################" -ForegroundColor Yellow `r
-    Write-Host "AD MEMBERS CHAPTER" -ForegroundColor Yellow
-    Write-Host "##################" -ForegroundColor Yellow `r`n
-
+function CIS-MemberSetting {
     Write-Host "Setting 'Access this computer from the network' to 'Administrators, Authenticated Users'" -ForegroundColor Green
     Set-Policy -Group 'Administrateurs' -Key 'SeNetworkLogonRight' -Options "replace"
     Set-Policy -Group 'Utilisateurs authentifiés' -Key 'SeNetworkLogonRight' -Options "add"
@@ -221,7 +222,150 @@ Function SetLocalPolicies {
     Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\RestrictRemoteSAM=1,O:BAG:BAD:(A;;RC;;;BA)" -Options "newreg" -Pattern '^MACHINE.*(\\Control\\Lsa\\)'
 }
 
-Function SetAccountPolicies {
+function CIS-Firewall {
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Firewall state' to 'On'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True
+
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Inbound connections' to 'Block'" -ForegroundColor Green
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Outbound connections' to 'Allow'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultInboundAction Block -DefaultOutboundAction Allow
+
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Settings: Display a notification' to 'No'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain,Private,Public -NotifyOnListen False
+
+    Write-Host "Setting 'Windows Firewall: Public: Settings: Apply local firewall rules' to 'No'" -ForegroundColor Green
+    Set-NetFirewallProfile -Public -AllowLocalFirewallRules False
+
+    Write-Host "Setting 'Windows Firewall: Public: Settings: Apply local connection security rules' to 'No'" -ForegroundColor Green
+    Set-NetFirewallProfile -Public -AllowLocalIPsecRules False
+
+    Write-Host "Setting 'Windows Firewall: Domain: Logging: Name' to '%SystemRoot%\System32\logfiles\firewall\domainfw.log'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain -LogFileName %SystemRoot%\System32\LogFiles\Firewall\domainfw.log
+
+    Write-Host "Setting 'Windows Firewall: Private: Logging: Name' to '%SystemRoot%\System32\logfiles\firewall\privatefw.log'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Private -LogFileName %SystemRoot%\System32\LogFiles\Firewall\privatefw.log
+
+    Write-Host "Setting 'Windows Firewall: Public: Logging: Name' to '%SystemRoot%\System32\logfiles\firewall\publicfw.log'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Public -LogFileName %SystemRoot%\System32\LogFiles\Firewall\publicfw.log
+
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Size limit(KB)' to '16384 KB'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain,Private,Public -LogMaxSizeKilobytes 16384
+
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Log dropped packets' to 'Yes'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain,Private,Public -LogBlocked True
+
+    Write-Host "Setting 'Windows Firewall: Domain,Private,Public: Logging: Log successful connections' to 'Yes'" -ForegroundColor Green
+    Set-NetFirewallProfile -Profile Domain,Private,Public -LogAllowed True
+}
+
+function CIS-AuditLog {
+    Write-Host "Setting 'Audit: Force audit policy subcategory settings to override audit policy category settings' to 'enabled'" -ForegroundColor Green
+    Set-Policy -Key "\System\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy=4,1" -Options "newreg" -Pattern '^MACHINE.*(\\CurrentControlSet\\Control\\Lsa\\)'
+
+    Write-Host "Setting 'Audit Credential Validation' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Validation des informations d'identification" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Kerberos Authentication Service' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Service d'authentification Kerberos" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Kerberos Service Ticket Operations' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Opérations de ticket du service Kerberos" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Application Group Management' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Gestion des groupes d'applications" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Computer Account Management' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Gestion des comptes d'ordinateur" /success:enable
+
+    Write-Host "Setting 'Audit Distribution Group Management' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Gestion des groupes de distribution" /success:enable
+
+    Write-Host "Setting 'Audit Other Account Management Events' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Autres événements de gestion des comptes" /success:enable
+
+    Write-Host "Setting 'Audit Security Group Management' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Gestion des groupes de sécurité" /success:enable
+
+    Write-Host "Setting 'Audit User Account Management' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Gestion des comptes d'utilisateur" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit PNP Activity' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"événements Plug-and-Play" /success:enable
+
+    Write-Host "Setting 'Audit Process Creation' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Création du processus" /success:enable
+
+    Write-Host "Setting 'Audit Directory Service Access' to 'Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Accès au service d'annuaire" /failure:enable
+
+    Write-Host "Setting 'Audit Directory Service Changes' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification du service d'annuaire" /success:enable
+
+    Write-Host "Setting 'Audit Account Lockout' to 'Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Verrouillage du compte" /failure:enable
+
+    Write-Host "Setting 'Audit Group Membership' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Appartenance à un groupe" /success:enable
+
+    Write-Host "Setting 'Audit Logoff' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Fermer la session" /success:enable
+
+    Write-Host "Setting 'Audit Logon' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Ouvrir la session" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Other Logon/Logoff Events' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Autres événements d'ouverture/fermeture de session" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Special Logon' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Ouverture de session spéciale" /success:enable
+
+    Write-Host "Setting 'Audit Detailed File Share' to 'Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Partage de fichiers détaillé" /failure:enable
+
+    Write-Host "Setting 'Audit File Share' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Partage de fichiers" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Other Object Access Events' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Autres événements d'accès à l'objet" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Removable Storage' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Stockage amovible" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Audit Policy Change' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification de la stratégie d'audit" /success:enable
+
+    Write-Host "Setting 'Audit Authentication Policy Change' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification de la stratégie d'authentification" /success:enable
+
+    Write-Host "Setting 'Audit Authorization Policy Change' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification de la stratégie d'autorisation" /success:enable
+
+    Write-Host "Setting 'Audit MPSSVC Rule-Level Policy Change' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification de la stratégie de niveau règle MPSSVC" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Ohter Policy Change Events' to 'Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Autres événements de modification de stratégie" /failure:enable
+
+    Write-Host "Setting 'Audit Sensitive Privilege Use' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Utilisation de privilèges sensibles" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit IPsec Driver' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Pilote IPSEC" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Other System Events' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Autres événements système" /success:enable /failure:enable
+
+    Write-Host "Setting 'Audit Security State Change' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Modification de l'état de la sécurité" /success:enable
+
+    Write-Host "Setting 'Audit Security System Extension' to 'Success'" -ForegroundColor Green
+    auditpol /set /subcategory:"Extension système de sécurité" /success:enable
+
+    Write-Host "Setting 'Audit System Integrity' to 'Success and Failure'" -ForegroundColor Green
+    auditpol /set /subcategory:"Intégrité du système" /success:enable /failure:enable
+}
+
+Function SetDomainAccountPolicies {
     param (
         [Parameter(Mandatory=$true)][String]$identity
     )
@@ -237,28 +381,149 @@ Function SetAccountPolicies {
     Set-ADDefaultDomainPasswordPolicy -Identity $identity -MinPasswordLength 14
 }
 
-Function Harden {
-    $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
+function Backup {
+    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+    if ($exist -eq $true) {
+        Write-Host "Backup file already exists" -ForegroundColor Yellow
+        $rpl = Read-Host "Replace it? (y/n)"
+        if ($rpl -eq "y") {
+            secedit /export /cfg actualconf.txt
+            Write-Host "Previous configuration file replaced" -ForegroundColor Yellow
+            exit 0
+        } elseif ($rpl -eq "n") {
+            exit 0
+        }
+    } elseif ($backup -eq "n") {
+            exit 0
+    } else {
+        Write-Host "Backing up to actualconf.txt file" -ForegroundColor Yellow
+        secedit /export /cfg actualconf.txt
+        $conf = Test-Path -Path ./actualconf.txt -PathType Leaf
+        if ($conf -eq $true) {
+            Write-Host "Current configuration successfully saved" -ForegroundColor Green
+            exit 0
+        } elseif ($conf -eq $false) {
+            Write-Host "Failed to backup actual config... Leaving"
+            exit 1
+        }
+    }
+}
+
+function Restore {
+    Write-Host "Rollback to the previous configuration." -ForegroundColor Yellow
+    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
+    if ($exist -eq $true) {
+        secedit /validate .\actualconf.txt
+        secedit /import /db .\actualconf.db /overwrite /cfg .\actualconf.txt /quiet
+        secedit /configure /db .\actualconf.db /cfg .\actualconf.txt
+        gpupdate /force
+        Write-Host "Successfully rolled back. Leaving..." -ForegroundColor Green
+        exit 0
+    } else { Write-Host "Failed to apply backup: actualconf.txt - No such file!"; exit 1}
+}
+
+function CIS-Help {
+    Write-Host "USAGE: script -Options" `r`n
+    Write-Host "Available options: script [-DomainAccountPolicies] [-GeneralConfig] [-Audit] [-Firewall] [-Logon] [-MemberSetting] [-Accounts] [-NetworkSec] [-Network] [-All] [-Backup] [-Restore]" `r`n
+    Write-Host "-DomainAccountPolicies" -ForegroundColor Yellow
+    Write-Host "Bring change to the whole Domain and it's password rules specific- use wisely" `r`n
+    Write-Host "-GeneralConfig" -ForegroundColor Yellow
+    Write-Host "Safe option - no impact expected" `r`n
+    Write-Host "-Audit" -ForegroundColor Yellow
+    Write-Host "Apply Audit and log rules on the target" `r`n
+    Write-Host "-Firewall" -ForegroundColor Yellow
+    Write-Host "Apply Windows firewall rules on the target" `r`n
+    Write-Host "-Logon" -ForegroundColor Yellow
+    Write-Host "Apply logon related rules" `r`n
+    Write-Host "-MemberSetting" -ForegroundColor Yellow
+    Write-Host "Apply general member specific rules" `r`n
+    Write-Host "-Accounts" -ForegroundColor Yellow
+    Write-Host "Apply accounts rules" `r`n
+    Write-Host "-NetworkSec" -ForegroundColor Yellow
+    Write-Host "Apply network security rules" `r`n
+    Write-Host "-Network" -ForegroundColor Yellow
+    Write-Host "Apply network rules" `r`n
+    Write-Host "-All" -ForegroundColor Yellow
+    Write-Host "Apply everything except whole Domain rules" `r`n
+    Write-Host "-Backup" -ForegroundColor Yellow
+    Write-Host "Backup the actual configuration and save it to actualconf.txt" `r`n
+    Write-Host "-Restore" -ForegroundColor Yellow
+    Write-Host "Rollback to the previous saved configuration" `r`n
+}
+
+function Selector([string] $option) {
+    switch ($option) {
+        "-Backup" {
+            Backup
+        }
+        "-Restore" {
+            Restore
+        }
+        "-DomainAccountPolicies" {
+            $identity = Read-Host "Specify the domain identity:"
+            SetDomainAccountPolicies $identity
+        }
+        "-GeneralConfig" {
+            CIS-GeneralPolicies
+        }
+        "-Audit" {
+            CIS-AuditLog
+        }
+        "-Firewall" {
+            CIS-Firewall
+        }
+        "-Logon" {
+            CIS-LogonSpecific
+        }
+        "-MemberSetting" {
+            CIS-MemberSetting
+        }
+        "-Accounts" {
+            CIS-Accounts
+        }
+        "-NetworkSec" {
+            CIS-NetworkSecurity
+        }
+        "-Network" {
+            CIS-NetworkAccess
+        }
+        "-All" {
+            CIS-GeneralPolicies
+            CIS-AuditLog
+            CIS-Firewall
+            CIS-LogonSpecific
+            CIS-MemberSetting
+            CIS-Accounts
+            CIS-NetworkSecurity
+            CIS-NetworkAccess
+        }
+        "-Backup" {
+            Backup
+        }
+        Default {
+            Write-Host "Invalid option!" -ForegroundColor Red
+            CIS-Help
+            exit 1
+        }
+    }
+}
+
+function Harden([string] $selector) {
+    if ($selector -eq "-Backup" -Or $selector -eq "-Restore") {
+        Selector $selector
+    }
+    else {
+        $shouldctn = Read-Host "Do you want to continue with system hardening? (y/n)"
         if ($shouldctn -eq "y") {
             Write-Host "Getting current policy" -ForegroundColor Yellow `r
             GetSec
-            # $identity = Read-Host "Specify the domain identity:"
-            # SetAccountPolicies $identity
-            SetLocalPolicies
-            $currentdir = Get-Location
-            $removable = [string]$currentdir + "\temp.*"
-            Up-NewConf -rmtmp $removable
+            Selector $selector
+            Write-Host "Writing new configuration" -ForegroundColor Green
+            Up-NewConf
         } else { Write-Host "Leaving..."; exit 0 }
+    }
 }
 
-$backup = Read-Host "Should we backup the current configuration? (y/n)"
-
-if ($backup -eq "y") {
-    secedit /export /cfg actualconf.txt
-    $exist = Test-Path -Path ./actualconf.txt -PathType Leaf
-    if ($exist -eq $true) {
-        Harden
-    } else { Write-Host "Failed to backup actual config... Leaving"; exit 1 }
-} elseif ($backup -eq "n") {
-    Harden
-} else { Write-Host "Wrong answer... Leaving"; exit 1 }
+if (!$args[0]) {
+    CIS-Help
+} else { Harden $args[0]}
